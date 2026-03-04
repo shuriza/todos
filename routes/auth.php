@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -33,9 +34,24 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+    
+    // Google OAuth Routes (accessible by guests for initial login)
+    Route::get('auth/google', [GoogleAuthController::class, 'redirect'])
+        ->name('auth.google');
 });
 
+// Google callback needs to work for both guests AND authenticated users (reconnecting)
+Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])
+    ->name('auth.google.callback');
+
 Route::middleware('auth')->group(function () {
+    // Google Reconnect (for authenticated users to re-grant Classroom scopes)
+    Route::get('auth/google/reconnect', [GoogleAuthController::class, 'reconnect'])
+        ->name('auth.google.reconnect');
+    
+    Route::get('auth/google/check-access', [GoogleAuthController::class, 'checkAccess'])
+        ->name('auth.google.check-access');
+
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

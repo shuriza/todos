@@ -78,14 +78,35 @@ class AiAssistantController extends Controller
     }
 
     /**
+     * Confirm and create tasks from AI preview.
+     */
+    public function confirmTasks(Request $request)
+    {
+        $validated = $request->validate([
+            'tasks'   => 'required|array|min:1',
+            'tasks.*.title'       => 'required|string|max:255',
+            'tasks.*.description' => 'nullable|string',
+            'tasks.*.category'    => 'nullable|string|in:kuliah,pekerjaan,daily_activity',
+            'tasks.*.priority'    => 'nullable|string|in:high,medium,low',
+            'tasks.*.kuadran'     => 'nullable|integer|in:1,2,3,4',
+            'tasks.*.due_date'    => 'nullable|date',
+            'tasks.*.due_time'    => 'nullable|string',
+        ]);
+
+        $result = $this->aiService->confirmTasks($validated['tasks'], Auth::id());
+
+        return response()->json($result);
+    }
+
+    /**
      * Get all sessions for current user.
      */
     public function sessions()
     {
         $sessions = AiConversation::where('user_id', Auth::id())
-            ->select('session_id')
+            ->selectRaw('session_id, MIN(created_at) as first_created_at')
             ->groupBy('session_id')
-            ->orderBy('created_at', 'desc')
+            ->orderByDesc('first_created_at')
             ->get()
             ->map(function ($item) {
                 $firstMessage = AiConversation::where('session_id', $item->session_id)
@@ -95,7 +116,7 @@ class AiAssistantController extends Controller
                 return [
                     'session_id' => $item->session_id,
                     'preview' => $firstMessage ? substr($firstMessage->message, 0, 50) . '...' : '',
-                    'created_at' => $firstMessage->created_at ?? null,
+                    'created_at' => $firstMessage?->created_at ?? $item->first_created_at,
                 ];
             });
 

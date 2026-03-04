@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Category;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CategoryPolicy
 {
@@ -13,7 +12,7 @@ class CategoryPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +20,7 @@ class CategoryPolicy
      */
     public function view(User $user, Category $category): bool
     {
-        return false;
+        return $user->id === $category->user_id;
     }
 
     /**
@@ -29,7 +28,7 @@ class CategoryPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**

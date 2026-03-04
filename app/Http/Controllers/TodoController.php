@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Todo;
 use App\Models\Category;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,8 +21,8 @@ class TodoController extends Controller
         $stats = [
             'total' => Todo::where('user_id', $userId)->count(),
             'completed' => Todo::where('user_id', $userId)->where('status', 'completed')->count(),
-            'in_progress' => 0, // Calendar events - placeholder untuk fitur masa depan
-            'overdue' => 0, // Saved ideas - placeholder untuk fitur masa depan
+            'in_progress' => Todo::where('user_id', $userId)->where('status', 'in_progress')->count(),
+            'overdue' => Todo::where('user_id', $userId)->incomplete()->overdue()->count(),
         ];
 
         return view('dashboard', compact('stats'));
@@ -32,7 +33,7 @@ class TodoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Todo::with('category')
+        $query = Todo::with(['categoryModel', 'course'])
             ->where('user_id', Auth::id())
             ->orderBy('order', 'asc')
             ->orderBy('created_at', 'desc');
@@ -52,12 +53,23 @@ class TodoController extends Controller
             $query->where('priority', $request->priority);
         }
 
+        // Filter by kuadran
+        if ($request->has('kuadran') && $request->kuadran) {
+            $query->where('kuadran', $request->kuadran);
+        }
+
+        // Filter by course
+        if ($request->has('course_id') && $request->course_id) {
+            $query->where('course_id', $request->course_id);
+        }
+
         $todos = $query->get();
         $categories = Category::where('user_id', Auth::id())
             ->orderBy('order', 'asc')
             ->get();
+        $courses = Course::where('user_id', Auth::id())->get();
 
-        return view('todos.index', compact('todos', 'categories'));
+        return view('todos.index', compact('todos', 'categories', 'courses'));
     }
 
     /**
@@ -72,17 +84,27 @@ class TodoController extends Controller
             'category' => 'nullable|string|max:255',
             'priority' => 'required|in:low,medium,high',
             'due_date' => 'nullable|date',
+            'due_time' => 'nullable|date_format:H:i',
+            'course_id' => 'nullable|exists:courses,id',
             'tags' => 'nullable|array',
         ]);
+
+        // Auto-calculate kuadran using Eisenhower algorithm
+        $kuadran = Todo::hitungKuadran(
+            $validated['priority'] ?? 'medium',
+            $validated['due_date'] ?? null
+        );
 
         $todo = Todo::create([
             ...$validated,
             'user_id' => Auth::id(),
             'status' => 'todo',
+            'kuadran' => $kuadran,
+            'sumber' => 'manual',
         ]);
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'todo' => $todo->load('category')]);
+            return response()->json(['success' => true, 'todo' => $todo->fresh()]);
         }
 
         return redirect()->route('todos.index')->with('success', 'Todo created successfully!');
@@ -102,6 +124,9 @@ class TodoController extends Controller
             'priority' => 'sometimes|in:low,medium,high',
             'status' => 'sometimes|in:todo,in_progress,completed',
             'due_date' => 'nullable|date',
+            'due_time' => 'nullable|date_format:H:i',
+            'course_id' => 'nullable|exists:courses,id',
+            'kuadran' => 'sometimes|integer|in:1,2,3,4',
             'tags' => 'nullable|array',
             'order' => 'sometimes|integer',
         ]);
@@ -116,7 +141,7 @@ class TodoController extends Controller
         $todo->update($validated);
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'todo' => $todo->load('category')]);
+            return response()->json(['success' => true, 'todo' => $todo->fresh()]);
         }
 
         return redirect()->route('todos.index')->with('success', 'Todo updated successfully!');
