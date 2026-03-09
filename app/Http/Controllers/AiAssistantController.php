@@ -91,6 +91,7 @@ class AiAssistantController extends Controller
             'tasks.*.kuadran'     => 'nullable|integer|in:1,2,3,4',
             'tasks.*.due_date'    => 'nullable|date',
             'tasks.*.due_time'    => 'nullable|string',
+            'tasks.*.reminder_minutes' => 'nullable|integer|min:1|max:2880',
         ]);
 
         $result = $this->aiService->confirmTasks($validated['tasks'], Auth::id());

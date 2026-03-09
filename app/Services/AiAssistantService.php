@@ -35,6 +35,13 @@ class AiAssistantService
      */
     public function chat(string $message, int $userId, ?string $sessionId = null, ?int $todoId = null): array
     {
+        if (empty($this->apiKey)) {
+            return [
+                'success' => false,
+                'error'   => 'API key Gemini belum dikonfigurasi. Tambahkan GEMINI_API_KEY di file .env.',
+            ];
+        }
+
         $sessionId = $sessionId ?? uniqid('session_', true);
 
         // Conversation history
@@ -99,6 +106,14 @@ class AiAssistantService
 
                 // Strip <think>...</think> blocks (jika ada)
                 $rawMessage = $this->stripThinkingBlocks($rawMessage);
+
+                if (trim($rawMessage) === '') {
+                    Log::warning('Gemini returned empty content', ['data' => $data]);
+                    return [
+                        'success' => false,
+                        'error'   => 'AI tidak mengembalikan respons. Coba lagi atau ubah pertanyaan.',
+                    ];
+                }
 
                 // Save conversation
                 $this->saveConversation($userId, $sessionId, 'user', $message, $todoId);
@@ -219,7 +234,9 @@ class AiAssistantService
      */
     public function generateSuggestions(int $todoId, int $userId): array
     {
-        $todo = Todo::with('categoryModel')->find($todoId);
+        $todo = Todo::with('categoryModel')
+            ->where('user_id', $userId)
+            ->find($todoId);
 
         if (!$todo) {
             return ['success' => false, 'error' => 'Todo not found'];
@@ -360,6 +377,10 @@ PROMPT;
 
             $decoded = json_decode($jsonStr, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                // Normalize single task object to array of tasks
+                if (isset($decoded['title'])) {
+                    $decoded = [$decoded];
+                }
                 $tasks = $this->validateTaskPreviews($decoded);
             } else {
                 Log::warning('AI returned invalid task JSON', [

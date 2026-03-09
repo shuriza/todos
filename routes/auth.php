@@ -35,10 +35,11 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
     
-    // Google OAuth Routes (accessible by guests for initial login)
-    Route::get('auth/google', [GoogleAuthController::class, 'redirect'])
-        ->name('auth.google');
 });
+
+// Google OAuth (accessible by both guests and authenticated users for reconnecting)
+Route::get('auth/google', [GoogleAuthController::class, 'redirect'])
+    ->name('auth.google');
 
 // Google callback needs to work for both guests AND authenticated users (reconnecting)
 Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])

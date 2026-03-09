@@ -62,12 +62,11 @@ class NotificationController extends Controller
             'daily_summary' => 'required|boolean',
             'overdue_alert' => 'required|boolean',
             'classroom_sync' => 'required|boolean',
-            'reminder_hours' => 'required|integer|min:1|max:48',
+            'reminder_hours' => 'required|numeric|min:0.0167|max:48',
             'daily_summary_time' => 'required|string|date_format:H:i',
         ]);
 
-        // Ensure reminder_hours is stored as integer
-        $validated['reminder_hours'] = (int) $validated['reminder_hours'];
+        $validated['reminder_hours'] = (float) $validated['reminder_hours'];
 
         $user = $request->user();
         $user->notification_preferences = $validated;

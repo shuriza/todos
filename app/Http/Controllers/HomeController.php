@@ -12,12 +12,6 @@ class HomeController extends Controller
     {
         $user = Auth::user();
         
-        // Get user's recent tasks
-        $todos = Todo::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->limit(6)
-            ->get();
-        
         // Calculate statistics
         $stats = [
             'total' => Todo::where('user_id', $user->id)->count(),
@@ -58,7 +52,7 @@ class HomeController extends Controller
             ->get();
 
         // Fallback: if no kuadran assigned yet, use old priority-based logic
-        if ($urgentImportant->isEmpty() && $notUrgentImportant->isEmpty() && $urgentNotImportant->isEmpty()) {
+        if ($urgentImportant->isEmpty() && $notUrgentImportant->isEmpty() && $urgentNotImportant->isEmpty() && $notUrgentNotImportant->isEmpty()) {
             $urgentImportant = Todo::where('user_id', $user->id)
                 ->where('priority', 'high')
                 ->where('status', '!=', 'completed')
@@ -76,7 +70,7 @@ class HomeController extends Controller
         }
         
         return view('home', compact(
-            'todos', 'stats',
+            'stats',
             'urgentImportant', 'notUrgentImportant',
             'urgentNotImportant', 'notUrgentNotImportant'
         ));

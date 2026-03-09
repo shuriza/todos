@@ -115,13 +115,13 @@ class ClassroomController extends Controller
 
         $todos = Todo::where('course_id', $course->id)
             ->where('user_id', Auth::id())
-            ->orderByRaw("FIELD(status, 'todo', 'in_progress', 'completed')")
+            ->orderByRaw("CASE status WHEN 'todo' THEN 1 WHEN 'in_progress' THEN 2 WHEN 'completed' THEN 3 ELSE 4 END")
             ->orderBy('due_date', 'asc')
             ->get();
 
         $stats = [
             'total' => $todos->count(),
-            'pending' => $todos->where('status', 'todo')->count(),
+            'pending' => $todos->where('status', '!=', 'completed')->count(),
             'in_progress' => $todos->where('status', 'in_progress')->count(),
             'completed' => $todos->where('status', 'completed')->count(),
             'overdue' => $todos->filter(fn($t) => $t->isOverdue())->count(),

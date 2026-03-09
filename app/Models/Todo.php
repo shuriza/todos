@@ -136,7 +136,7 @@ class Todo extends Model
      */
     public function scopeOverdue($query)
     {
-        return $query->where('due_date', '<', now())
+        return $query->where('due_date', '<', today())
                     ->where('status', '!=', 'completed');
     }
 

@@ -151,7 +151,12 @@ window.chatBot = function () {
         // --- Format Markdown ---
         formatMessage(text) {
             if (!text) return '';
-            return text
+            const escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+            return escaped
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
                 .replace(/`(.*?)`/g, '<code class="bg-gray-100 text-indigo-700 px-1 rounded text-xs">$1</code>')

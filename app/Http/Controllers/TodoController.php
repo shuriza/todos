@@ -7,27 +7,10 @@ use App\Models\Category;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class TodoController extends Controller
 {
-    /**
-     * Display dashboard with overview.
-     */
-    public function dashboard()
-    {
-        $userId = Auth::id();
-
-        // Statistics
-        $stats = [
-            'total' => Todo::where('user_id', $userId)->count(),
-            'completed' => Todo::where('user_id', $userId)->where('status', 'completed')->count(),
-            'in_progress' => Todo::where('user_id', $userId)->where('status', 'in_progress')->count(),
-            'overdue' => Todo::where('user_id', $userId)->incomplete()->overdue()->count(),
-        ];
-
-        return view('dashboard', compact('stats'));
-    }
-
     /**
      * Display a listing of todos.
      */
@@ -43,9 +26,14 @@ class TodoController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter by category
+        // Filter by category (model relation)
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
+        }
+
+        // Filter by category (string field)
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
         }
 
         // Filter by priority
@@ -80,12 +68,12 @@ class TodoController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => ['nullable', Rule::exists('categories', 'id')->where('user_id', Auth::id())],
             'category' => 'nullable|string|max:255',
             'priority' => 'required|in:low,medium,high',
             'due_date' => 'nullable|date',
             'due_time' => 'nullable|date_format:H:i',
-            'course_id' => 'nullable|exists:courses,id',
+            'course_id' => ['nullable', Rule::exists('courses', 'id')->where('user_id', Auth::id())],
             'tags' => 'nullable|array',
         ]);
 
@@ -120,12 +108,13 @@ class TodoController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => ['nullable', Rule::exists('categories', 'id')->where('user_id', Auth::id())],
+            'category' => 'nullable|string|max:255',
             'priority' => 'sometimes|in:low,medium,high',
             'status' => 'sometimes|in:todo,in_progress,completed',
             'due_date' => 'nullable|date',
             'due_time' => 'nullable|date_format:H:i',
-            'course_id' => 'nullable|exists:courses,id',
+            'course_id' => ['nullable', Rule::exists('courses', 'id')->where('user_id', Auth::id())],
             'kuadran' => 'sometimes|integer|in:1,2,3,4',
             'tags' => 'nullable|array',
             'order' => 'sometimes|integer',
@@ -136,6 +125,14 @@ class TodoController extends Controller
             $validated['completed_at'] = now();
         } elseif (isset($validated['status']) && $validated['status'] !== 'completed') {
             $validated['completed_at'] = null;
+        }
+
+        // Recalculate kuadran when priority or due_date changes (unless manually set)
+        if (!isset($validated['kuadran']) && (isset($validated['priority']) || isset($validated['due_date']))) {
+            $validated['kuadran'] = Todo::hitungKuadran(
+                $validated['priority'] ?? $todo->priority,
+                $validated['due_date'] ?? $todo->due_date?->format('Y-m-d')
+            );
         }
 
         $todo->update($validated);

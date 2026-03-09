@@ -113,6 +113,7 @@ class GoogleClassroomService
             $this->user->update([
                 'google_access_token' => $data['access_token'],
             ]);
+            $this->user->refresh();
 
             Log::info('Google token refreshed for user ' . $this->user->id);
         } else {
@@ -299,7 +300,7 @@ class GoogleClassroomService
             $dueDate = null;
             $dueTime = null;
 
-            if (isset($cw['dueDate'])) {
+            if (isset($cw['dueDate']) && isset($cw['dueDate']['year'], $cw['dueDate']['month'], $cw['dueDate']['day'])) {
                 $year = $cw['dueDate']['year'];
                 $month = str_pad($cw['dueDate']['month'], 2, '0', STR_PAD_LEFT);
                 $day = str_pad($cw['dueDate']['day'], 2, '0', STR_PAD_LEFT);
@@ -344,29 +345,39 @@ class GoogleClassroomService
             // Calculate kuadran Eisenhower
             $kuadran = Todo::hitungKuadran($priority, $dueDate);
 
-            // Update or create todo
-            $todo = Todo::updateOrCreate(
-                [
-                    'user_id' => $this->user->id,
-                    'google_task_id' => $cw['id'],
-                ],
-                [
-                    'course_id' => $course->id,
-                    'title' => $cw['title'] ?? 'Untitled Assignment',
-                    'description' => $cw['description'] ?? null,
-                    'priority' => $priority,
-                    'status' => $status,
-                    'kuadran' => $kuadran,
-                    'sumber' => 'google_classroom',
-                    'due_date' => $dueDate,
-                    'due_time' => $dueTime,
-                ]
-            );
+            // Sync without downgrading local status
+            $existingTodo = Todo::where('user_id', $this->user->id)
+                ->where('google_task_id', $cw['id'])
+                ->first();
 
-            if ($todo->wasRecentlyCreated) {
-                $synced++;
-            } else {
+            $data = [
+                'course_id' => $course->id,
+                'title' => $cw['title'] ?? 'Untitled Assignment',
+                'description' => $cw['description'] ?? null,
+                'priority' => $priority,
+                'kuadran' => $kuadran,
+                'sumber' => 'google_classroom',
+                'due_date' => $dueDate,
+                'due_time' => $dueTime,
+            ];
+
+            if ($existingTodo) {
+                // Only upgrade status, never downgrade:
+                // If Classroom says completed but local isn't, upgrade.
+                // If local is already completed but Classroom says todo, keep completed.
+                if ($status === 'completed' && $existingTodo->status !== 'completed') {
+                    $data['status'] = 'completed';
+                    $data['completed_at'] = now();
+                }
+
+                $existingTodo->update($data);
                 $updated++;
+            } else {
+                $data['status'] = $status;
+                $data['user_id'] = $this->user->id;
+                $data['google_task_id'] = $cw['id'];
+                Todo::create($data);
+                $synced++;
             }
         }
 

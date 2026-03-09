@@ -275,9 +275,9 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
                             <select x-model="newTask.category" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option value="kuliah"> Kuliah</option>
-                                <option value="pekerjaan"> Pekerjaan</option>
-                                <option value="daily_activity"> Daily Activity</option>
+                                <option value="kuliah">Kuliah</option>
+                                <option value="pekerjaan">Pekerjaan</option>
+                                <option value="daily_activity">Daily Activity</option>
                             </select>
                         </div>
                         <div>

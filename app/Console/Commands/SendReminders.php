@@ -186,7 +186,7 @@ class SendReminders extends Command
                       // Today's tasks where due_time has already passed
                       $q2->whereDate('due_date', today())
                          ->whereNotNull('due_time')
-                         ->whereRaw("CONCAT(due_date, ' ', due_time) < ?", [now()->toDateTimeString()]);
+                         ->where('due_time', '<', now()->format('H:i:s'));
                   });
             })
             ->whereDoesntHave('notificationLogs', function ($q) {

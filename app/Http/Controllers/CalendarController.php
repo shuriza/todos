@@ -35,7 +35,7 @@ class CalendarController extends Controller
         // Upcoming tasks (next 7 days)
         $upcoming = Todo::where('user_id', $user->id)
             ->whereNotNull('due_date')
-            ->whereBetween('due_date', [now(), now()->addDays(7)])
+            ->whereBetween('due_date', [today(), today()->addDays(7)])
             ->where('status', '!=', 'completed')
             ->with('course')
             ->orderBy('due_date')

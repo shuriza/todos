@@ -95,13 +95,12 @@ class TelegramService
         }
 
         $deadline = $todo->deadline?->translatedFormat('d M Y, H:i') ?? '-';
-        $dueTime = $todo->due_time ? " ({$todo->due_time})" : '';
         $kuadranLabel = Todo::KUADRAN_LABELS[$todo->kuadran] ?? 'Belum ditentukan';
         $source = $todo->sumber === 'google_classroom' ? '📚 Classroom' : '📝 Manual';
 
         $message = "⏰ <b>Pengingat Deadline</b>\n\n"
             . "<b>{$todo->title}</b>\n"
-            . "Deadline: {$deadline}{$dueTime}\n"
+            . "Deadline: {$deadline}\n"
             . "Kuadran: {$kuadranLabel} · {$source}\n";
 
         if ($todo->description) {

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
@@ -57,7 +58,7 @@ class GoogleAuthController extends Controller
                 $user = User::create([
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
-                    'password' => Hash::make(uniqid()),
+                    'password' => Hash::make(Str::random(60)),
                     'email_verified_at' => now(),
                     'google_id' => $googleUser->getId(),
                     'avatar' => $googleUser->getAvatar(),

@@ -10,7 +10,8 @@
  * Ambil CSRF token dari meta tag
  */
 export function getCsrfToken() {
-    return document.querySelector('meta[name="csrf-token"]').content;
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.content : '';
 }
 
 /**
@@ -121,5 +122,9 @@ export function getKuadranDotClass(k) {
 export function readJsonData(elementId) {
     const el = document.getElementById(elementId);
     if (!el) return null;
-    return JSON.parse(el.textContent);
+    try {
+        return JSON.parse(el.textContent);
+    } catch {
+        return null;
+    }
 }
