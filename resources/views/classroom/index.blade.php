@@ -43,22 +43,17 @@
                         </svg>
                         Hubungkan Ulang Google
                     </a>
-                    <form method="POST" action="{{ route('classroom.sync-courses') }}">
+                    <form method="POST" action="{{ route('classroom.sync-tasks') }}" x-data="{ loading: false }" @submit="loading = true">
                         @csrf
-                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="submit" :disabled="loading" class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 rounded-lg text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed">
+                            <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                             </svg>
-                            Sync Mata Kuliah
-                        </button>
-                    </form>
-                    <form method="POST" action="{{ route('classroom.sync-tasks') }}">
-                        @csrf
-                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 rounded-lg text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                             </svg>
-                            Sync Semua Tugas
+                            <span x-text="loading ? 'Sinkronisasi berjalan...' : 'Sinkronisasi'"></span>
                         </button>
                     </form>
                 </div>

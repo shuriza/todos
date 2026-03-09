@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SyncGoogleClassroomJob;
 use App\Models\Course;
 use App\Models\Todo;
 use App\Services\GoogleClassroomService;
@@ -54,19 +55,9 @@ class ClassroomController extends Controller
             return back()->with('error', 'Anda belum menghubungkan akun Google. Silakan login ulang dengan Google.');
         }
 
-        try {
-            $service = new GoogleClassroomService($user);
-            $result = $service->syncCourses();
+        SyncGoogleClassroomJob::dispatch($user);
 
-            $message = "Sinkronisasi berhasil! {$result['synced']} mata kuliah baru ditambahkan.";
-            if ($result['existing'] > 0) {
-                $message .= " {$result['existing']} mata kuliah diperbarui.";
-            }
-
-            return back()->with('success', $message);
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal sinkronisasi: ' . $e->getMessage());
-        }
+        return back()->with('success', 'Sinkronisasi mata kuliah & tugas dimulai di background. Hasilnya akan tersedia dalam beberapa saat — silakan refresh halaman ini.');
     }
 
     /**
@@ -80,30 +71,9 @@ class ClassroomController extends Controller
             return back()->with('error', 'Anda belum menghubungkan akun Google. Silakan login ulang dengan Google.');
         }
 
-        try {
-            $service = new GoogleClassroomService($user);
-            
-            // Sync courses first
-            $service->syncCourses();
-            
-            // Then sync tasks
-            $result = $service->syncAllCoursework();
+        SyncGoogleClassroomJob::dispatch($user);
 
-            $message = "Sinkronisasi tugas berhasil! {$result['synced']} tugas baru ditambahkan.";
-            if ($result['updated'] > 0) {
-                $message .= " {$result['updated']} tugas diperbarui.";
-            }
-            if ($result['synced'] === 0 && $result['updated'] === 0) {
-                $message = "Sinkronisasi selesai. Tidak ada tugas baru ditemukan di Google Classroom. Pastikan kelas memiliki assignment/tugas yang sudah dipublish.";
-            }
-            if (!empty($result['errors'])) {
-                $message .= " (Beberapa error: " . implode(', ', $result['errors']) . ")";
-            }
-
-            return back()->with('success', $message);
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
+        return back()->with('success', 'Sinkronisasi semua tugas dimulai di background. Hasilnya akan tersedia dalam beberapa saat — silakan refresh halaman ini.');
     }
 
     /**
