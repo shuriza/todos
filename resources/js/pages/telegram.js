@@ -7,7 +7,7 @@
  * Data: Membaca dari <script id="telegram-data"> JSON block
  */
 
-import { readJsonData, formatDateTime } from '../helpers';
+import { readJsonData, formatDateTime, toast } from '../helpers';
 
 window.telegramSettings = function () {
     const data = readJsonData('telegram-data') || {};
@@ -19,8 +19,6 @@ window.telegramSettings = function () {
 
         // Save Chat ID
         saving: false,
-        saveMessage: '',
-        saveSuccess: false,
 
         // Test notification
         testing: false,
@@ -37,6 +35,8 @@ window.telegramSettings = function () {
             overdue_alert: true,
             classroom_sync: true,
             reminder_hours: 2,
+            overdue_max_days: 7,
+            overdue_cooldown_hours: 24,
             daily_summary_time: '07:00',
         },
 
@@ -59,7 +59,6 @@ window.telegramSettings = function () {
         // --- Save Chat ID ---
         async saveChatId() {
             this.saving = true;
-            this.saveMessage = '';
             try {
                 const res = await fetch(this.routes.saveChatId, {
                     method: 'POST',
@@ -68,16 +67,13 @@ window.telegramSettings = function () {
                 });
                 const result = await res.json();
                 if (res.ok && result.success) {
-                    this.saveMessage = result.message;
-                    this.saveSuccess = true;
-                    setTimeout(() => location.reload(), 1000);
+                    toast(result.message || 'Chat ID berhasil disimpan!');
+                    setTimeout(() => location.reload(), 800);
                 } else {
-                    this.saveMessage = result.message || 'Gagal menyimpan';
-                    this.saveSuccess = false;
+                    toast(result.message || 'Gagal menyimpan', 'error');
                 }
             } catch (e) {
-                this.saveMessage = 'Terjadi kesalahan jaringan';
-                this.saveSuccess = false;
+                toast('Terjadi kesalahan jaringan', 'error');
             }
             this.saving = false;
         },
@@ -169,9 +165,14 @@ window.telegramSettings = function () {
                     headers: this._headers(),
                 });
                 const result = await res.json();
-                if (res.ok && result.success) location.reload();
+                if (res.ok && result.success) {
+                    toast('Telegram berhasil diputuskan');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    toast(result.message || 'Gagal memutuskan Telegram', 'error');
+                }
             } catch (e) {
-                // silent fail
+                toast('Terjadi kesalahan jaringan', 'error');
             }
         },
 

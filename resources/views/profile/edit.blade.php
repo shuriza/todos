@@ -33,9 +33,14 @@
                             <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-lg font-medium">{{ $user->prodi }}</span>
                         @endif
                         @if($user->google_id)
-                            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-lg font-medium flex items-center gap-1">
-                                <svg class="w-3 h-3" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/></svg>
-                                Google
+                            <span class="text-xs bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-lg font-medium flex items-center gap-1.5 shadow-sm">
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                Login Google
                             </span>
                         @endif
                         @if($user->hasTelegram())
@@ -236,9 +241,6 @@
                                 <span x-text="saving ? 'Menyimpan...' : 'Simpan'"></span>
                             </button>
                         </div>
-                        <template x-if="saveMessage">
-                            <p class="mt-2 text-sm" :class="saveSuccess ? 'text-green-600' : 'text-red-600'" x-text="saveMessage" x-transition></p>
-                        </template>
                     </div>
 
                     {{-- Test Notification Button --}}
@@ -285,7 +287,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Pengingat Deadline</p>
-                                        <p class="text-xs text-gray-500">Notifikasi sebelum deadline tugas</p>
+                                        <p class="text-xs text-gray-500">Kirim notifikasi sebelum batas waktu tiba, sekali per tugas.</p>
                                     </div>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
@@ -328,14 +330,43 @@
                                         <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-gray-900">Peringatan Overdue</p>
-                                        <p class="text-xs text-gray-500">Notifikasi saat tugas melewati deadline</p>
+                                        <p class="text-sm font-medium text-gray-900">Peringatan Terlambat</p>
+                                        <p class="text-xs text-gray-500">Ingatkan tugas yang sudah melewati tenggat. Kalau &gt;3 sekaligus, dikirim 1 ringkasan.</p>
                                     </div>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" x-model="prefs.overdue_alert" @change="autoSavePrefs()" class="sr-only peer">
                                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
+                            </div>
+
+                            {{-- Overdue Settings (show if overdue alert enabled) --}}
+                            <div x-show="prefs.overdue_alert" x-transition class="pl-4 space-y-2">
+                                <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-100 flex-wrap">
+                                    <label class="text-sm text-red-800 font-medium whitespace-nowrap">Ingatkan jika terlambat maksimal</label>
+                                    <select x-model.number="prefs.overdue_max_days" @change="autoSavePrefs()"
+                                            class="rounded-lg border-red-200 bg-white text-sm py-1.5 text-red-800 focus:border-red-400 focus:ring-red-400">
+                                        <option value="1">1 hari</option>
+                                        <option value="3">3 hari</option>
+                                        <option value="7">7 hari</option>
+                                        <option value="14">14 hari</option>
+                                        <option value="30">30 hari</option>
+                                    </select>
+                                    <span class="text-xs text-red-700 w-full">Tugas yang terlambat lebih lama dari ini tidak akan diingatkan (cegah spam saat sinkron Classroom tugas lama).</span>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-100 flex-wrap">
+                                    <label class="text-sm text-red-800 font-medium whitespace-nowrap">Kirim ulang setiap</label>
+                                    <select x-model.number="prefs.overdue_cooldown_hours" @change="autoSavePrefs()"
+                                            class="rounded-lg border-red-200 bg-white text-sm py-1.5 text-red-800 focus:border-red-400 focus:ring-red-400">
+                                        <option value="2">2 jam</option>
+                                        <option value="6">6 jam</option>
+                                        <option value="12">12 jam</option>
+                                        <option value="24">24 jam (1 hari)</option>
+                                        <option value="48">48 jam (2 hari)</option>
+                                        <option value="72">72 jam (3 hari)</option>
+                                    </select>
+                                    <span class="text-xs text-red-700 w-full">Jeda pengulangan antara notifikasi untuk tugas terlambat yang sama.</span>
+                                </div>
                             </div>
 
                             {{-- Daily Summary --}}
@@ -346,7 +377,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Rangkuman Harian</p>
-                                        <p class="text-xs text-gray-500">Ringkasan tugas setiap pagi</p>
+                                        <p class="text-xs text-gray-500">Kirim ringkasan tugas hari ini + statistik, sekali tiap pagi.</p>
                                     </div>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
@@ -373,7 +404,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Sinkronisasi Classroom</p>
-                                        <p class="text-xs text-gray-500">Notifikasi saat ada tugas baru dari Classroom</p>
+                                        <p class="text-xs text-gray-500">Kirim notifikasi saat sinkron Classroom menambahkan tugas baru atau memperbarui tugas.</p>
                                     </div>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
@@ -461,13 +492,20 @@
                 </div>
             </div>
 
-            {{-- Change Password --}}
+            {{-- Change Password (only for users with a local password) --}}
+            @if(!empty($user->password))
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-1">Ubah Password</h3>
                 <p class="text-sm text-gray-500 mb-5">Pastikan akun menggunakan password yang kuat</p>
 
                 @include('profile.partials.update-password-form')
             </div>
+            @else
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Keamanan Akun</h3>
+                <p class="text-sm text-gray-500">Akun ini login menggunakan Google. Keamanan password dikelola oleh Google.</p>
+            </div>
+            @endif
 
             {{-- Danger Zone --}}
             <div class="bg-white rounded-xl border border-red-200 shadow-sm p-6">
@@ -490,6 +528,8 @@
                 'overdue_alert' => (bool) $user->getNotifPref('overdue_alert', true),
                 'classroom_sync' => (bool) $user->getNotifPref('classroom_sync', true),
                 'reminder_hours' => $user->getNotifPref('reminder_hours', 2),
+                'overdue_max_days' => (int) $user->getNotifPref('overdue_max_days', 7),
+                'overdue_cooldown_hours' => (int) $user->getNotifPref('overdue_cooldown_hours', 24),
                 'daily_summary_time' => $user->getNotifPref('daily_summary_time', '07:00'),
             ],
             'routes' => [

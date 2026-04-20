@@ -128,3 +128,17 @@ export function readJsonData(elementId) {
         return null;
     }
 }
+
+/**
+ * Tampilkan toast notification global.
+ * Mengirim CustomEvent 'toast' yang ditangkap oleh toastManager di app.blade.php.
+ *
+ * @param {string} message  - Teks pesan
+ * @param {'success'|'error'|'warning'|'info'} type - Tipe notifikasi (default: 'success')
+ * @param {number} duration - Durasi dalam ms sebelum hilang (default: 3000)
+ */
+export function toast(message, type = 'success', duration = 3000) {
+    window.dispatchEvent(new CustomEvent('toast', {
+        detail: { message, type, duration, id: Date.now() },
+    }));
+}

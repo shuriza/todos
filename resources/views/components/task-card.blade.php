@@ -11,7 +11,8 @@
     $isOverdue = $task->due_date && \Carbon\Carbon::parse($task->due_date)->isPast() && $task->status !== 'completed';
 @endphp
 
-<div class="{{ $c['bg'] }} rounded-lg border border-gray-200 border-l-4 {{ $c['border'] }} p-3 hover:shadow-md transition-shadow cursor-pointer group"
+<div id="dash-todo-{{ $task->id }}"
+     class="{{ $c['bg'] }} rounded-lg border border-gray-200 border-l-4 {{ $c['border'] }} p-3 hover:shadow-md transition-shadow cursor-pointer group"
      @click="openDetail({{ json_encode($task->toArray()) }})"
      x-data="{ menuOpen: false }">
     <div class="flex items-start gap-3">
@@ -78,7 +79,7 @@
                     </button>
                 @endif
                 <div class="border-t border-gray-100 my-1"></div>
-                <button @click="if(confirm('Hapus tugas ini?')) { fetch('{{ route('todos.destroy', $task) }}', {method:'DELETE',headers:{'Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content}}).then(()=>location.reload()); } menuOpen = false"
+                <button @click="deleteTodo({{ $task->id }}); menuOpen = false"
                         class="w-full text-left px-3 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     Hapus Tugas

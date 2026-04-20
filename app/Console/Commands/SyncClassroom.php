@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use App\Services\GoogleClassroomService;
+use App\Services\TelegramService;
 use Illuminate\Console\Command;
 
 class SyncClassroom extends Command
@@ -17,6 +18,14 @@ class SyncClassroom extends Command
      * The console command description.
      */
     protected $description = 'Sinkronisasi data dari Google Classroom (courses & tasks)';
+
+    protected TelegramService $telegramService;
+
+    public function __construct(TelegramService $telegramService)
+    {
+        parent::__construct();
+        $this->telegramService = $telegramService;
+    }
 
     /**
      * Execute the console command.
@@ -53,9 +62,25 @@ class SyncClassroom extends Command
                 $this->line("  Mata Kuliah: {$courseResult['synced']} baru, {$courseResult['existing']} diperbarui (total: {$courseResult['total']})");
 
                 // Sync tasks
+                $taskResult = null;
                 if (!$coursesOnly) {
                     $taskResult = $service->syncAllCoursework();
                     $this->line("  Tugas: {$taskResult['synced']} baru, {$taskResult['updated']} diperbarui, {$taskResult['skipped']} dilewati");
+                }
+
+                // Notif Telegram: hanya jika user enable classroom_sync pref + Telegram aktif + ada perubahan
+                if (
+                    $taskResult
+                    && $user->hasTelegram()
+                    && $user->isNotifEnabled('classroom_sync')
+                    && ($taskResult['synced'] > 0 || $taskResult['updated'] > 0)
+                ) {
+                    $this->telegramService->sendClassroomSyncNotification(
+                        $user,
+                        $taskResult['synced'],
+                        $taskResult['updated']
+                    );
+                    $this->line('  📱 Notifikasi Telegram terkirim');
                 }
 
                 $this->info("  ✓ Berhasil");

@@ -843,33 +843,46 @@ class TelegramBotService
     protected function buildTaskPreviewMessage(array $tasks): string
     {
         $count = count($tasks);
-        $msg = "<b>Preview Tugas</b> ({$count})\n\n";
+        $msg = "📝 <b>Preview Tugas</b> ({$count})\n\n";
 
         foreach ($tasks as $i => $task) {
             $priority = match ($task['priority'] ?? 'medium') {
-                'high' => '🔴',
+                'high'   => '🔴',
                 'medium' => '🟡',
-                'low' => '🟢',
-                default => '🟡',
+                'low'    => '🟢',
+                default  => '🟡',
             };
-            $due = $task['due_date'] ?? '-';
-            $time = !empty($task['due_time']) ? " {$task['due_time']}" : '';
 
-            $msg .= "<b>" . ($i + 1) . ". {$task['title']}</b>\n";
+            $title = htmlspecialchars($task['title'] ?? 'Tanpa judul', ENT_NOQUOTES, 'UTF-8');
+            $msg  .= "<b>" . ($i + 1) . ". {$title}</b>\n";
+
             if (!empty($task['description'])) {
-                $desc = mb_substr($task['description'], 0, 80);
-                $msg .= "   {$desc}\n";
+                $desc = htmlspecialchars(mb_substr($task['description'], 0, 80), ENT_NOQUOTES, 'UTF-8');
+                $msg .= "   <i>{$desc}</i>\n";
             }
-            $msg .= "   {$due}{$time} · {$priority} · Q" . ($task['kuadran'] ?? 2);
+
+            // Meta line: hanya tampilkan komponen yang ada (hindari "- · 🟡 · Q2")
+            $meta = [];
+            if (!empty($task['due_date'])) {
+                $dateStr = $task['due_date'];
+                if (!empty($task['due_time'])) {
+                    $dateStr .= ' ' . $task['due_time'];
+                }
+                $meta[] = "📅 {$dateStr}";
+            }
+            $meta[] = $priority;
+            $meta[] = 'Q' . ($task['kuadran'] ?? 2);
+
             if (!empty($task['reminder_minutes'])) {
-                $rm = $task['reminder_minutes'];
+                $rm = (int) $task['reminder_minutes'];
                 $rmLabel = $rm >= 60 ? round($rm / 60) . ' jam' : $rm . ' mnt';
-                $msg .= " · ⏰ {$rmLabel}";
+                $meta[] = "⏰ {$rmLabel}";
             }
-            $msg .= "\n";
+
+            $msg .= '   ' . implode(' · ', $meta) . "\n\n";
         }
 
-        return $msg;
+        return trim($msg);
     }
 
     /**
@@ -909,42 +922,66 @@ class TelegramBotService
     }
 
     /**
-     * Format AI response for Telegram HTML.
-     * Converts common markdown to Telegram-supported HTML.
+     * Format AI response (markdown) → Telegram HTML.
+     *
+     * Strategi pemrosesan:
+     *  1. Ekstrak code block (```…```) & inline code (`…`) dulu dengan placeholder
+     *     agar markdown di dalamnya tidak ikut di-transform.
+     *  2. Escape HTML special chars di sisa text.
+     *  3. Konversi markdown → tag Telegram.
+     *  4. Substitusi kembali code block yang sudah di-escape.
      */
     protected function formatAiResponse(string $text): string
     {
-        // Escape special chars first to prevent Telegram HTML parse errors
+        $codeBlocks = [];
+        $inlineCodes = [];
+
+        // 1a. Simpan code block (```…```) → placeholder
+        $text = preg_replace_callback('/```(?:\w+)?\n?(.*?)```/s', function ($m) use (&$codeBlocks) {
+            $idx = count($codeBlocks);
+            $codeBlocks[$idx] = htmlspecialchars($m[1], ENT_NOQUOTES, 'UTF-8');
+            return "\x00CB{$idx}\x00";
+        }, $text);
+
+        // 1b. Simpan inline code (`…`) → placeholder
+        $text = preg_replace_callback('/`([^`\n]+)`/', function ($m) use (&$inlineCodes) {
+            $idx = count($inlineCodes);
+            $inlineCodes[$idx] = htmlspecialchars($m[1], ENT_NOQUOTES, 'UTF-8');
+            return "\x00IC{$idx}\x00";
+        }, $text);
+
+        // 2. Escape sisa HTML
         $text = htmlspecialchars($text, ENT_NOQUOTES, 'UTF-8');
 
-        // Bold: **text** or __text__ → <b>text</b>
+        // 3. Markdown → Telegram HTML
+        //    Bold: **text** atau __text__
         $text = preg_replace('/\*\*(.+?)\*\*/s', '<b>$1</b>', $text);
         $text = preg_replace('/__(.+?)__/s', '<b>$1</b>', $text);
 
-        // Italic: *text* or _text_ (only match if bounded by spaces or start/end to avoid file*name issues, or just a simple match)
-        $text = preg_replace('/(?<!\<b\>)\*(?!\*)(.+?)(?<!\*)\*(?!\>)/s', '<i>$1</i>', $text);
-        $text = preg_replace('/(?<![A-Za-z0-9_])_([^_]+)_(?![A-Za-z0-9_])/s', '<i>$1</i>', $text);
+        //    Italic: *text* (bukan bagian dari **) & _text_ (bukan bagian dari __)
+        $text = preg_replace('/(?<!\*)\*(?!\*)([^\*\n]+?)(?<!\*)\*(?!\*)/s', '<i>$1</i>', $text);
+        $text = preg_replace('/(?<![A-Za-z0-9_])_([^_\n]+)_(?![A-Za-z0-9_])/s', '<i>$1</i>', $text);
 
-        // Inline code: `text` → <code>text</code>
-        $text = preg_replace('/`([^`]+)`/', '<code>$1</code>', $text);
-
-        // Code blocks: ```text``` → <pre>text</pre>
-        $text = preg_replace('/```[\w]*\n?(.*?)```/s', '<pre>$1</pre>', $text);
-
-        // Bullet lists: - item or * item → • item (escape asterisk so it doesn't trigger italic if we skipped escaping)
-        $text = preg_replace('/^[\-\*]\s+/m', '• ', $text);
-
-        // Numbered sub-items with dashes
-        $text = preg_replace('/^(\d+)\.\s+/m', '$1. ', $text);
-
-        // Headers: ### text or ## text → bold
-        $text = preg_replace('/^#{1,6}\s+(.+)$/m', '<b>$1</b>', $text);
-
-        // Strikethrough: ~~text~~ → <s>text</s>
+        //    Strikethrough: ~~text~~
         $text = preg_replace('/~~(.+?)~~/s', '<s>$1</s>', $text);
 
-        // Clean up multiple blank lines
+        //    Headers: # … → bold
+        $text = preg_replace('/^#{1,6}\s+(.+)$/m', '<b>$1</b>', $text);
+
+        //    Bullet lists: - item / * item → • item
+        $text = preg_replace('/^[\-\*]\s+/m', '• ', $text);
+
+        //    Normalisasi blank line
         $text = preg_replace('/\n{3,}/', "\n\n", $text);
+
+        // 4. Restore code placeholders
+        $text = preg_replace_callback('/\x00CB(\d+)\x00/', function ($m) use ($codeBlocks) {
+            return '<pre>' . ($codeBlocks[(int) $m[1]] ?? '') . '</pre>';
+        }, $text);
+
+        $text = preg_replace_callback('/\x00IC(\d+)\x00/', function ($m) use ($inlineCodes) {
+            return '<code>' . ($inlineCodes[(int) $m[1]] ?? '') . '</code>';
+        }, $text);
 
         return trim($text);
     }

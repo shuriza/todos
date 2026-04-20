@@ -169,6 +169,12 @@ class SendReminders extends Command
 
     /**
      * Send overdue alerts.
+     *
+     * Guards untuk mencegah spam saat sync banyak tugas lama:
+     *  1. `overdue_max_days`: hanya kirim untuk tugas yang terlambat <= N hari (default 7).
+     *     Tugas lama dari sync Classroom tahun-tahun sebelumnya di-skip.
+     *  2. `overdue_cooldown_hours`: cooldown pengulangan per-tugas (default 24 jam).
+     *  3. Batching: jika >3 tugas overdue sekaligus, kirim 1 pesan ringkasan.
      */
     protected function sendOverdueAlerts(User $user, bool $dryRun): array
     {
@@ -177,9 +183,14 @@ class SendReminders extends Command
             return [0, 0];
         }
 
+        $maxDays = (int) $user->getNotifPref('overdue_max_days', 7);
+        $cooldownHours = (int) $user->getNotifPref('overdue_cooldown_hours', 24);
+        $earliestDate = now()->subDays($maxDays)->toDateString();
+
         // Find overdue todos: past days OR today with due_time already passed
         $overdueTodos = $user->todos()
             ->where('status', '!=', 'completed')
+            ->where('due_date', '>=', $earliestDate)
             ->where(function ($q) {
                 $q->where('due_date', '<', now()->toDateString())
                   ->orWhere(function ($q2) {
@@ -189,21 +200,39 @@ class SendReminders extends Command
                          ->where('due_time', '<', now()->format('H:i:s'));
                   });
             })
-            ->whereDoesntHave('notificationLogs', function ($q) {
-                // Don't spam: only alert once per 2 hours per todo
+            ->whereDoesntHave('notificationLogs', function ($q) use ($cooldownHours) {
+                // Cooldown pengulangan per-tugas
                 $q->telegram()
                     ->sent()
                     ->where(function ($q2) {
                         $q2->where('pesan', 'LIKE', '%Tugas Overdue%')
-                           ->orWhere('pesan', 'LIKE', '%Melewati Deadline%');
+                           ->orWhere('pesan', 'LIKE', '%Melewati Deadline%')
+                           ->orWhere('pesan', 'LIKE', '%Ringkasan Tugas Terlambat%');
                     })
-                    ->where('created_at', '>', now()->subHours(2));
+                    ->where('created_at', '>', now()->subHours($cooldownHours));
             })
             ->get();
 
         if ($overdueTodos->isEmpty()) {
             $this->line('  ⚠️ Overdue alert: tidak ada tugas overdue baru');
             return [0, 0];
+        }
+
+        // Batch jika overdue banyak → 1 ringkasan, bukan spam per-tugas
+        if ($overdueTodos->count() > 3) {
+            if ($dryRun) {
+                $this->line("  📋 [DRY RUN] Would send overdue SUMMARY ({$overdueTodos->count()} tugas)");
+                return [1, 0];
+            }
+
+            $log = $this->telegramService->sendOverdueSummary($user, $overdueTodos);
+            if ($log && $log->isSent()) {
+                $this->line("  ✅ Overdue summary sent ({$overdueTodos->count()} tugas)");
+                return [1, 0];
+            }
+
+            $this->line('  ❌ Overdue summary failed');
+            return [0, 1];
         }
 
         $sent = 0;

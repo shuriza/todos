@@ -39,9 +39,12 @@ class ApiResponse
 
     public static function error(string $error, int $status = 400, ?array $errors = null): JsonResponse
     {
+        // `message` disediakan sebagai alias dari `error` agar kompatibel dengan
+        // frontend yang membaca kedua field (konsisten antara respons sukses/gagal).
         $payload = [
             'success' => false,
             'error'   => $error,
+            'message' => $error,
         ];
 
         if ($errors !== null) {

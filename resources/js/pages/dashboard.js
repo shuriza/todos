@@ -6,7 +6,7 @@
  * Fitur: Matriks Eisenhower, detail tugas, tambah tugas, pindah kuadran
  */
 
-import { apiHeaders, formatDate, getKuadranLabel } from '../helpers';
+import { apiHeaders, formatDate, getKuadranLabel, toast } from '../helpers';
 
 window.dashboardApp = function () {
     return {
@@ -14,6 +14,7 @@ window.dashboardApp = function () {
         showDetailModal: false,
         showAddModal: false,
         selectedTask: null,
+        addSaving: false,
         newTask: {
             title: '',
             description: '',
@@ -38,6 +39,7 @@ window.dashboardApp = function () {
         },
 
         // --- Actions ---
+
         async toggleComplete(task) {
             if (!task) return;
             const newStatus = task.status === 'completed' ? 'todo' : 'completed';
@@ -47,13 +49,22 @@ window.dashboardApp = function () {
                     headers: apiHeaders(),
                     body: JSON.stringify({ status: newStatus }),
                 });
-                if (res.ok) location.reload();
-                else {
-                    const data = await res.json();
-                    alert(data.message || 'Gagal mengubah status');
+                const data = await res.json();
+                if (data.success) {
+                    if (newStatus === 'completed') {
+                        // Hapus dari kuadran (dashboard hanya tampilkan yang belum selesai)
+                        document.getElementById(`dash-todo-${task.id}`)?.remove();
+                        toast('Tugas diselesaikan! ✓');
+                    } else {
+                        toast('Tugas dibuka kembali');
+                        setTimeout(() => location.reload(), 500);
+                    }
+                    this.showDetailModal = false;
+                } else {
+                    toast(data.message || 'Gagal mengubah status', 'error');
                 }
-            } catch (e) {
-                console.error(e);
+            } catch {
+                toast('Gagal mengubah status', 'error');
             }
         },
 
@@ -64,37 +75,65 @@ window.dashboardApp = function () {
                     headers: apiHeaders(),
                     body: JSON.stringify({ kuadran }),
                 });
-                if (res.ok) location.reload();
-                else {
-                    const data = await res.json();
-                    alert(data.message || 'Gagal pindah kuadran');
+                const data = await res.json();
+                if (data.success) {
+                    toast('Kuadran berhasil diperbarui');
+                    // Card perlu pindah ke kotak kuadran lain — reload halaman
+                    setTimeout(() => location.reload(), 400);
+                } else {
+                    toast(data.message || 'Gagal pindah kuadran', 'error');
                 }
-            } catch (e) {
-                console.error(e);
+            } catch {
+                toast('Gagal pindah kuadran', 'error');
             }
         },
 
         async addTask() {
+            if (this.addSaving) return;
+            this.addSaving = true;
             try {
                 const res = await fetch('/todos', {
                     method: 'POST',
                     headers: apiHeaders(),
                     body: JSON.stringify(this.newTask),
                 });
-                if (res.ok) {
+                const data = await res.json();
+                if (data.success || res.ok) {
                     this.showAddModal = false;
-                    location.reload();
+                    this.newTask = { title: '', description: '', category: 'kuliah', priority: 'medium', due_date: '', due_time: '' };
+                    toast('Tugas berhasil ditambahkan!');
+                    // Perlu reload untuk menempatkan tugas di kuadran yang tepat
+                    setTimeout(() => location.reload(), 500);
                 } else {
-                    const data = await res.json();
-                    alert(
-                        data.message ||
-                        Object.values(data.errors || {}).flat().join('\n') ||
-                        'Gagal menambah tugas'
-                    );
+                    const msg = data.message
+                        || Object.values(data.errors || {}).flat().join(', ')
+                        || 'Gagal menambah tugas';
+                    toast(msg, 'error');
                 }
-            } catch (e) {
-                console.error(e);
-                alert('Gagal menambah tugas');
+            } catch {
+                toast('Gagal menambah tugas', 'error');
+            } finally {
+                this.addSaving = false;
+            }
+        },
+
+        async deleteTodo(id) {
+            if (!confirm('Hapus tugas ini?')) return;
+            try {
+                const res = await fetch(`/todos/${id}`, {
+                    method: 'DELETE',
+                    headers: apiHeaders(false),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById(`dash-todo-${id}`)?.remove();
+                    toast('Tugas berhasil dihapus');
+                    this.showDetailModal = false;
+                } else {
+                    toast(data.message || 'Gagal menghapus tugas', 'error');
+                }
+            } catch {
+                toast('Gagal menghapus tugas', 'error');
             }
         },
     };

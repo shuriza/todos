@@ -191,5 +191,48 @@
         </div>
 
         @stack('scripts')
+
+        <!-- Toast Notification Container -->
+        <div x-data="toastManager()"
+             @toast.window="add($event.detail)"
+             class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none w-80 max-w-[calc(100vw-2rem)]"
+             aria-live="polite">
+            <template x-for="t in toasts" :key="t.id">
+                <div class="flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border pointer-events-auto text-sm font-medium"
+                     :class="{
+                         'bg-green-50 border-green-200 text-green-800': t.type === 'success',
+                         'bg-red-50 border-red-200 text-red-800': t.type === 'error',
+                         'bg-blue-50 border-blue-200 text-blue-800': t.type === 'info',
+                         'bg-yellow-50 border-yellow-200 text-yellow-800': t.type === 'warning',
+                     }"
+                     x-show="t.visible"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-x-4"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-x-0"
+                     x-transition:leave-end="opacity-0 translate-x-4">
+                    <!-- Icon sesuai type -->
+                    <div class="flex-shrink-0 mt-0.5">
+                        <template x-if="t.type === 'success'">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        </template>
+                        <template x-if="t.type === 'error'">
+                            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                        </template>
+                        <template x-if="t.type === 'warning'">
+                            <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                        </template>
+                        <template x-if="t.type === 'info'">
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </template>
+                    </div>
+                    <span x-text="t.message" class="flex-1 leading-snug"></span>
+                    <button @click="remove(t.id)" class="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity -mt-0.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </template>
+        </div>
     </body>
 </html>

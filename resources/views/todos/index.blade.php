@@ -12,7 +12,13 @@
         </div>
     </x-slot>
 
-    <div class="p-4 lg:p-6 space-y-5" x-data="todoPageApp()">
+    @php
+        $hasActiveFilters = !empty(array_filter($filters ?? [], fn($v) => $v && $v !== 'all'));
+        $hasMultiplePages = $todos->hasPages();
+        $canReorder = !$hasActiveFilters && !$hasMultiplePages;
+    @endphp
+
+    <div class="p-4 lg:p-6 space-y-5" x-data="todoPageApp({ canReorder: {{ $canReorder ? 'true' : 'false' }} })">
 
         {{-- Search & Filter Bar --}}
         <form method="GET" action="{{ route('todos.index') }}" class="bg-white rounded-xl border border-gray-200 p-4">
@@ -100,7 +106,7 @@
             </div>
 
             {{-- Table body --}}
-            <div class="divide-y divide-gray-100">
+            <div id="todo-list-body" class="divide-y divide-gray-100">
                 @forelse ($todos as $todo)
                     @php
                         $isOverdue = $todo->due_date && $todo->due_date->isPast() && $todo->status !== 'completed';
@@ -109,10 +115,19 @@
                         $priorityColors = ['high' => 'bg-red-100 text-red-700', 'medium' => 'bg-yellow-100 text-yellow-700', 'low' => 'bg-green-100 text-green-700'];
                         $priorityNames = ['high' => 'Tinggi', 'medium' => 'Sedang', 'low' => 'Rendah'];
                     @endphp
-                    <div class="px-5 py-4 hover:bg-gray-50 transition-colors group {{ $todo->status === 'completed' ? 'bg-gray-50/50' : '' }}">
+                    <div id="todo-row-{{ $todo->id }}" data-todo-id="{{ $todo->id }}" class="px-5 py-4 hover:bg-gray-50 transition-colors group {{ $todo->status === 'completed' ? 'bg-gray-50/50' : '' }}">
                         <div class="lg:grid lg:grid-cols-12 gap-4 flex flex-col lg:flex-row items-start lg:items-center">
-                            {{-- Checkbox --}}
-                            <div class="col-span-1 flex items-center">
+                            {{-- Drag Handle + Checkbox --}}
+                            <div class="col-span-1 flex items-center gap-1.5">
+                                @if ($canReorder)
+                                    <div class="drag-handle cursor-grab active:cursor-grabbing p-0.5 text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0" title="Seret untuk mengubah urutan">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                            <circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/>
+                                            <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+                                            <circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/>
+                                        </svg>
+                                    </div>
+                                @endif
                                 <button @click="toggleStatus({{ $todo->id }}, '{{ $todo->status }}')"
                                     class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors {{ $todo->status === 'completed' ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-green-400' }}">
                                     @if ($todo->status === 'completed')
@@ -204,18 +219,16 @@
 
             {{-- Pagination --}}
             @if ($todos->hasPages())
-                <div class="px-5 py-4 border-t border-gray-200">
+                <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
                     {{ $todos->links() }}
+                </div>
+            @elseif ($todos->total() > 0)
+                <div class="px-5 py-3 border-t border-gray-100 text-sm text-gray-500">
+                    Menampilkan semua {{ $todos->total() }} tugas
                 </div>
             @endif
         </div>
 
-        {{-- Showing info --}}
-        @if ($todos->total() > 0)
-            <p class="text-xs text-gray-500 text-center">
-                Menampilkan {{ $todos->firstItem() }}-{{ $todos->lastItem() }} dari {{ $todos->total() }} tugas
-            </p>
-        @endif
 
         {{-- Task Detail Modal --}}
         <div x-show="showDetailModal" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click.self="showDetailModal = false">

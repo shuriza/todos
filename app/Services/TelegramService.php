@@ -237,6 +237,50 @@ class TelegramService
     }
 
     /**
+     * Send overdue summary: satu pesan ringkasan untuk banyak tugas overdue sekaligus.
+     * Dipakai saat user punya >3 tugas overdue aktif (hindari spam per-tugas).
+     *
+     * @param \Illuminate\Support\Collection<Todo> $todos
+     */
+    public function sendOverdueSummary(User $user, $todos): ?NotificationLog
+    {
+        if (!$user->hasTelegram() || $todos->isEmpty()) {
+            return null;
+        }
+
+        $total = $todos->count();
+        $message = "🚨 <b>Ringkasan Tugas Terlambat</b>\n"
+            . "Kamu punya <b>{$total} tugas</b> yang melewati tenggat.\n\n";
+
+        foreach ($todos->take(5) as $i => $todo) {
+            $deadline = $todo->deadline;
+            $daysLate = $deadline ? (int) now()->startOfDay()->diffInDays($deadline->startOfDay(), false) : 0;
+            $lateText = $daysLate < 0 ? abs($daysLate) . ' hari lalu' : 'hari ini';
+            $title = htmlspecialchars($todo->title, ENT_QUOTES, 'UTF-8');
+            $message .= ($i + 1) . ". {$title}\n";
+            $message .= "   <i>Terlambat {$lateText}</i>\n";
+        }
+
+        if ($total > 5) {
+            $remaining = $total - 5;
+            $message .= "\n<i>+{$remaining} tugas lainnya...</i>\n";
+        }
+
+        $message .= "\n📋 Buka aplikasi untuk menyelesaikan atau menghapusnya.";
+
+        $result = $this->sendMessage($user->telegram_chat_id, $message);
+
+        return NotificationLog::create([
+            'user_id' => $user->id,
+            'todo_id' => null,
+            'tipe_notifikasi' => 'telegram',
+            'status_kirim' => $result['ok'] ? 'sent' : 'failed',
+            'pesan' => $message,
+            'waktu_kirim' => $result['ok'] ? now() : null,
+        ]);
+    }
+
+    /**
      * Send classroom sync notification.
      */
     public function sendClassroomSyncNotification(User $user, int $newTasks, int $updatedTasks): ?NotificationLog

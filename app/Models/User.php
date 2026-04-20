@@ -132,7 +132,9 @@ class User extends Authenticatable
             'daily_summary' => false,
             'overdue_alert' => true,
             'classroom_sync' => true,
-            'reminder_hours' => 2,       // Jam sebelum deadline
+            'reminder_hours' => 2,          // Jam sebelum deadline (advance notice)
+            'overdue_max_days' => 7,        // Batas "tugas terlambat berapa hari" yg masih diingatkan
+            'overdue_cooldown_hours' => 24, // Interval pengulangan notif overdue
             'daily_summary_time' => '07:00',
         ];
     }
