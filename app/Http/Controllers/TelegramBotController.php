@@ -21,14 +21,23 @@ class TelegramBotController extends Controller
      *
      * POST /telegram/webhook
      * No auth, no CSRF — this is called by Telegram servers.
+     * Proteksi dilakukan via X-Telegram-Bot-Api-Secret-Token header.
      */
     public function handleWebhook(Request $request): JsonResponse
     {
-        // Verify secret token if configured
-        $expectedSecret = config('services.telegram.webhook_secret');
-        if ($expectedSecret) {
+        // Enforce webhook secret di production. Di env local/testing boleh kosong
+        // untuk memudahkan dev. Lihat config/telegram.php.
+        $expectedSecret = config('telegram.webhook_secret') ?? config('services.telegram.webhook_secret');
+        $optionalEnvs   = config('telegram.webhook_secret_optional_envs', ['local', 'testing']);
+
+        if (empty($expectedSecret) && !in_array(app()->environment(), $optionalEnvs, true)) {
+            Log::error('Telegram webhook: TELEGRAM_WEBHOOK_SECRET belum di-set di production');
+            return response()->json(['ok' => false, 'error' => 'webhook not configured'], 403);
+        }
+
+        if (!empty($expectedSecret)) {
             $headerSecret = $request->header('X-Telegram-Bot-Api-Secret-Token');
-            if ($headerSecret !== $expectedSecret) {
+            if (!is_string($headerSecret) || !hash_equals($expectedSecret, $headerSecret)) {
                 Log::warning('Telegram webhook: invalid secret token', [
                     'ip' => $request->ip(),
                 ]);

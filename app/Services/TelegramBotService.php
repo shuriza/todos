@@ -436,7 +436,7 @@ class TelegramBotService
         foreach ($todos->values() as $i => $todo) {
             $num = ($page * $perPage) + $i + 1;
             $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : '-';
-            $overdue = ($todo->due_date && $todo->due_date->isPast()) ? ' ' : '';
+            $overdue = ($todo->due_date && $todo->due_date->isPast()) ? ' (Overdue)' : '';
             $message .= "{$num}. {$todo->title}\n"
                 . "    Deadline: {$due}{$overdue}\n";
         }
@@ -914,12 +914,16 @@ class TelegramBotService
      */
     protected function formatAiResponse(string $text): string
     {
+        // Escape special chars first to prevent Telegram HTML parse errors
+        $text = htmlspecialchars($text, ENT_NOQUOTES, 'UTF-8');
+
         // Bold: **text** or __text__ → <b>text</b>
         $text = preg_replace('/\*\*(.+?)\*\*/s', '<b>$1</b>', $text);
         $text = preg_replace('/__(.+?)__/s', '<b>$1</b>', $text);
 
-        // Italic: *text* → <i>text</i> (but not inside already converted bold tags)
+        // Italic: *text* or _text_ (only match if bounded by spaces or start/end to avoid file*name issues, or just a simple match)
         $text = preg_replace('/(?<!\<b\>)\*(?!\*)(.+?)(?<!\*)\*(?!\>)/s', '<i>$1</i>', $text);
+        $text = preg_replace('/(?<![A-Za-z0-9_])_([^_]+)_(?![A-Za-z0-9_])/s', '<i>$1</i>', $text);
 
         // Inline code: `text` → <code>text</code>
         $text = preg_replace('/`([^`]+)`/', '<code>$1</code>', $text);
@@ -927,7 +931,7 @@ class TelegramBotService
         // Code blocks: ```text``` → <pre>text</pre>
         $text = preg_replace('/```[\w]*\n?(.*?)```/s', '<pre>$1</pre>', $text);
 
-        // Bullet lists: - item or * item → • item
+        // Bullet lists: - item or * item → • item (escape asterisk so it doesn't trigger italic if we skipped escaping)
         $text = preg_replace('/^[\-\*]\s+/m', '• ', $text);
 
         // Numbered sub-items with dashes

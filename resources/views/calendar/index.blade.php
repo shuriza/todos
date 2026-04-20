@@ -116,7 +116,7 @@
                 </div>
 
                 {{-- Selected Date Detail --}}
-                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" x-show="selectedDate">
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" x-show="selectedDate" x-cloak>
                     <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
                         <span class="text-sm font-bold text-gray-800" x-text="selectedDate ? formatDateFull(selectedDate) : ''"></span>
                     </div>

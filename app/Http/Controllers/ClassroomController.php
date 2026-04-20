@@ -85,7 +85,7 @@ class ClassroomController extends Controller
 
         $todos = Todo::where('course_id', $course->id)
             ->where('user_id', Auth::id())
-            ->orderByRaw("CASE status WHEN 'todo' THEN 1 WHEN 'in_progress' THEN 2 WHEN 'completed' THEN 3 ELSE 4 END")
+            ->orderByRaw("CASE WHEN status = 'todo' THEN 1 WHEN status = 'in_progress' THEN 2 WHEN status = 'completed' THEN 3 ELSE 4 END")
             ->orderBy('due_date', 'asc')
             ->get();
 

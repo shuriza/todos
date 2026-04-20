@@ -1,33 +1,16 @@
 /**
  * ============================================
- * Todos Page — todoListApp()
+ * Todos Page — todoPageApp()
  * ============================================
  * Halaman: todos/index.blade.php
- * Fitur: CRUD tugas, filter, search, detail modal, edit/add modal
- * Data: Membaca dari <script id="todos-data"> JSON block
+ * Fitur: CRUD tugas, detail modal, edit/add modal
+ * Data di-render server-side via Blade. JS hanya handle modal & API actions.
  */
 
-import {
-    apiHeaders,
-    formatDate,
-    getKuadranLabel,
-    getKuadranBadgeClass,
-    getKuadranDotClass,
-    readJsonData,
-} from '../helpers';
+import { apiHeaders, formatDate, getKuadranLabel } from '../helpers';
 
-window.todoListApp = function () {
+window.todoPageApp = function () {
     return {
-        // Data
-        todos: readJsonData('todos-data') || [],
-
-        // Filter & Search
-        search: '',
-        statusFilter: 'all',
-        kuadranFilter: 'all',
-        categoryFilter: 'all',
-        sumberFilter: 'all',
-
         // Modal state
         showAddModal: false,
         showDetailModal: false,
@@ -41,34 +24,6 @@ window.todoListApp = function () {
             priority: 'medium',
             due_date: '',
             due_time: '',
-        },
-
-        // --- Computed ---
-        get filteredTodos() {
-            let filtered = this.todos;
-
-            if (this.search) {
-                const keyword = this.search.toLowerCase();
-                filtered = filtered.filter(
-                    (t) =>
-                        t.title.toLowerCase().includes(keyword) ||
-                        (t.description && t.description.toLowerCase().includes(keyword))
-                );
-            }
-            if (this.statusFilter !== 'all') {
-                filtered = filtered.filter((t) => t.status === this.statusFilter);
-            }
-            if (this.kuadranFilter !== 'all') {
-                filtered = filtered.filter((t) => t.kuadran == this.kuadranFilter);
-            }
-            if (this.categoryFilter !== 'all') {
-                filtered = filtered.filter((t) => (t.category || 'pekerjaan') === this.categoryFilter);
-            }
-            if (this.sumberFilter !== 'all') {
-                filtered = filtered.filter((t) => (t.sumber || 'manual') === this.sumberFilter);
-            }
-
-            return filtered;
         },
 
         // --- Form ---
@@ -116,16 +71,15 @@ window.todoListApp = function () {
                 });
                 const data = await res.json();
                 if (data.success) {
-                    if (this.editingId) {
-                        const idx = this.todos.findIndex((t) => t.id === this.editingId);
-                        if (idx !== -1) this.todos[idx] = data.todo;
-                    } else {
-                        this.todos.unshift(data.todo);
-                    }
                     this.showAddModal = false;
                     this.resetForm();
+                    location.reload();
                 } else {
-                    alert(data.message || 'Gagal menyimpan tugas');
+                    alert(
+                        data.message ||
+                        Object.values(data.errors || {}).flat().join('\n') ||
+                        'Gagal menyimpan tugas'
+                    );
                 }
             } catch (e) {
                 console.error(e);
@@ -135,16 +89,16 @@ window.todoListApp = function () {
             }
         },
 
-        async toggleStatus(task) {
-            const newStatus = task.status === 'completed' ? 'todo' : 'completed';
+        async toggleStatus(id, currentStatus) {
+            const newStatus = currentStatus === 'completed' ? 'todo' : 'completed';
             try {
-                const res = await fetch(`/todos/${task.id}`, {
+                const res = await fetch(`/todos/${id}`, {
                     method: 'PUT',
                     headers: apiHeaders(),
                     body: JSON.stringify({ status: newStatus }),
                 });
                 const data = await res.json();
-                if (data.success) task.status = newStatus;
+                if (data.success) location.reload();
             } catch (e) {
                 console.error(e);
             }
@@ -158,39 +112,15 @@ window.todoListApp = function () {
                     headers: apiHeaders(false),
                 });
                 const data = await res.json();
-                if (data.success) this.todos = this.todos.filter((t) => t.id !== id);
+                if (data.success) location.reload();
             } catch (e) {
                 console.error(e);
             }
         },
 
         // --- Helpers ---
-        isOverdue(task) {
-            return task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed';
-        },
-
-        getCategoryLabel(category) {
-            return {
-                kuliah: ' Kuliah',
-                pekerjaan: ' Pekerjaan',
-                daily_activity: ' Daily',
-            }[category] || category;
-        },
-
-        getKuadranName(k) {
-            return { 1: 'Do Now', 2: 'Schedule', 3: 'Delegate', 4: 'Eliminate' }[k] || '-';
-        },
-
         getKuadranLabel(k) {
             return getKuadranLabel(k);
-        },
-
-        getKuadranBadgeClass(k) {
-            return getKuadranBadgeClass(k);
-        },
-
-        getKuadranDotClass(k) {
-            return getKuadranDotClass(k);
         },
 
         formatDate(d) {

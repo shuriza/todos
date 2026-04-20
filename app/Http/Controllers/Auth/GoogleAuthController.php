@@ -47,7 +47,11 @@ class GoogleAuthController extends Controller
             $googleUser = Socialite::driver('google')->user();
             
             // Check which scopes were actually granted
-            $grantedScopes = $googleUser->approvedScopes ?? [];
+            // Socialite provides granted scopes via the token response
+            $grantedScopes = [];
+            if (isset($googleUser->accessTokenResponseBody['scope'])) {
+                $grantedScopes = explode(' ', $googleUser->accessTokenResponseBody['scope']);
+            }
             $hasClassroomAccess = empty($grantedScopes) || // If scopes not available, assume granted
                 collect(self::$classroomScopes)->every(fn($s) => in_array($s, $grantedScopes));
             

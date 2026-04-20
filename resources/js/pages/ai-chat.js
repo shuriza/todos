@@ -101,7 +101,7 @@ window.chatBot = function () {
                     this.messages.push({
                         id: Date.now() + 2,
                         role: 'assistant',
-                        message: `✅ **${data.count} tugas berhasil ditambahkan** ke daftar tugas kamu!`,
+                        message: `**${data.count} tugas berhasil ditambahkan** ke daftar tugas kamu.`,
                         time: this._getTime(),
                     });
                 } else {
@@ -156,11 +156,19 @@ window.chatBot = function () {
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
-            return escaped
+            
+            // Simple markdown parser
+            let formatted = escaped
+                .replace(/^### (.*$)/gim, '<h3 class="text-md font-bold mt-2 mb-1">$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold mt-2 mb-1">$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1 class="text-xl font-bold mt-2 mb-1">$1</h1>')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
                 .replace(/`(.*?)`/g, '<code class="bg-gray-100 text-indigo-700 px-1 rounded text-xs">$1</code>')
-                .replace(/\n/g, '<br>');
+                .replace(/^\s*-\s+(.*$)/gim, '<li class="ml-5 list-disc">$1</li>');
+                
+            // Convert newlines to breaks, but minimize double breaks for lists
+            return formatted.replace(/\n/g, '<br>').replace(/<\/li><br>/g, '</li>');
         },
 
         // --- Priority helpers ---
@@ -185,11 +193,11 @@ window.chatBot = function () {
 
         categoryLabel(cat) {
             const labels = {
-                kuliah: '📚 Kuliah',
-                pekerjaan: '💼 Pekerjaan',
-                daily_activity: '🏠 Daily',
+                kuliah: 'Kuliah',
+                pekerjaan: 'Pekerjaan',
+                daily_activity: 'Daily',
             };
-            return labels[cat] || '📚 Kuliah';
+            return labels[cat] || 'Kuliah';
         },
 
         formatDate(dateStr) {

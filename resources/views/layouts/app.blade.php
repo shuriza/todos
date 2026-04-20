@@ -24,7 +24,7 @@
                 <div class="flex items-center justify-center h-20 border-b border-indigo-700">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                            <span class="text-2xl">🎓</span>
+                            <span class="text-2xl">&#127891;</span>
                         </div>
                         <div>
                             <span class="text-white text-lg font-bold block leading-tight">TaskManager</span>
@@ -64,7 +64,16 @@
                         <span class="font-medium">Kalender</span>
                     </a>
 
-                    <p class="px-4 text-xs text-indigo-300 font-semibold uppercase tracking-wider mb-2 mt-6">Integrasi</p>
+                    <p class="px-4 text-xs text-indigo-300 font-semibold uppercase tracking-wider mb-2 mt-6">Fitur</p>
+
+                    <!-- Asisten Pintar -->
+                    <a href="{{ route('ai.index') }}" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('ai.*') ? 'bg-white/20 text-white' : 'text-indigo-100 hover:bg-white/10' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                        </svg>
+                        <span class="font-medium">Asisten Pintar</span>
+                    </a>
 
                     <!-- Google Classroom -->
                     <a href="{{ route('classroom.index') }}" 
@@ -74,28 +83,13 @@
                         </svg>
                         <span class="font-medium">Classroom</span>
                     </a>
-
-                    <!-- AI Assistant -->
-                    <a href="{{ route('ai.index') }}" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('ai.*') ? 'bg-white/20 text-white' : 'text-indigo-100 hover:bg-white/10' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                        <span class="font-medium">AI Assistant</span>
-                        <span class="ml-auto">
-                            <span class="flex h-2 w-2 relative">
-                                <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                            </span>
-                        </span>
-                    </a>
                 </nav>
 
                 <!-- User Profile at Bottom -->
                 <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-indigo-700">
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
                         @if(Auth::user()->avatar)
-                            <img src="{{ Auth::user()->avatar }}" class="w-10 h-10 rounded-full border-2 border-white/30 object-cover" alt="">
+                            <img src="{{ Auth::user()->avatar }}" class="w-10 h-10 rounded-full border-2 border-white/30 object-cover" alt="{{ Auth::user()->name }}">
                         @else
                             <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
                                 <span class="text-indigo-600 font-semibold">{{ substr(Auth::user()->name, 0, 1) }}</span>
@@ -175,12 +169,12 @@
                                      class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50"
                                      style="display: none;">
                                     <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        Profile Settings
+                                        Pengaturan Profil
                                     </a>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                                            Log Out
+                                            Keluar
                                         </button>
                                     </form>
                                 </div>

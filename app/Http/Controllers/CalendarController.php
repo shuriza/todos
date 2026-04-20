@@ -52,8 +52,7 @@ class CalendarController extends Controller
             ->get();
 
         return view('calendar.index', compact(
-            'todos', 'todosByDate', 'upcoming', 'overdue',
-            'month', 'year', 'startOfMonth', 'endOfMonth'
+            'upcoming', 'overdue', 'month', 'year'
         ));
     }
 

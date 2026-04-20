@@ -11,68 +11,86 @@ class HomeController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
-        // Calculate statistics
-        $stats = [
-            'total' => Todo::where('user_id', $user->id)->count(),
-            'completed' => Todo::where('user_id', $user->id)->where('status', 'completed')->count(),
-            'pending' => Todo::where('user_id', $user->id)->where('status', '!=', 'completed')->count(),
-            'overdue' => Todo::where('user_id', $user->id)->incomplete()->overdue()->count(),
-            'classroom' => Todo::where('user_id', $user->id)->fromClassroom()->count(),
-            'courses' => Course::where('user_id', $user->id)->count(),
-        ];
-        
-        // Get tasks by Kuadran Eisenhower (using new kuadran field)
-        $urgentImportant = Todo::where('user_id', $user->id)
-            ->where('kuadran', Todo::KUADRAN_DO_NOW)
-            ->where('status', '!=', 'completed')
-            ->with('course')
-            ->orderBy('due_date', 'asc')
-            ->get();
-            
-        $notUrgentImportant = Todo::where('user_id', $user->id)
-            ->where('kuadran', Todo::KUADRAN_SCHEDULE)
-            ->where('status', '!=', 'completed')
-            ->with('course')
-            ->orderBy('due_date', 'asc')
-            ->get();
-            
-        $urgentNotImportant = Todo::where('user_id', $user->id)
-            ->where('kuadran', Todo::KUADRAN_DELEGATE)
-            ->where('status', '!=', 'completed')
-            ->with('course')
-            ->orderBy('due_date', 'asc')
-            ->get();
+        $userId = $user->id;
 
-        $notUrgentNotImportant = Todo::where('user_id', $user->id)
-            ->where('kuadran', Todo::KUADRAN_ELIMINATE)
+        // Stats: single aggregate query (dulu: 6 query terpisah)
+        $stats = $this->computeStats($userId);
+
+        // Kuadran: single query diambil lalu di-group di PHP (dulu: 4 query terpisah)
+        $byKuadran = Todo::where('user_id', $userId)
             ->where('status', '!=', 'completed')
+            ->whereIn('kuadran', [
+                Todo::KUADRAN_DO_NOW,
+                Todo::KUADRAN_SCHEDULE,
+                Todo::KUADRAN_DELEGATE,
+                Todo::KUADRAN_ELIMINATE,
+            ])
             ->with('course')
             ->orderBy('due_date', 'asc')
-            ->get();
+            ->get()
+            ->groupBy('kuadran');
 
-        // Fallback: if no kuadran assigned yet, use old priority-based logic
-        if ($urgentImportant->isEmpty() && $notUrgentImportant->isEmpty() && $urgentNotImportant->isEmpty() && $notUrgentNotImportant->isEmpty()) {
-            $urgentImportant = Todo::where('user_id', $user->id)
-                ->where('priority', 'high')
+        $urgentImportant      = $byKuadran->get(Todo::KUADRAN_DO_NOW, collect());
+        $notUrgentImportant   = $byKuadran->get(Todo::KUADRAN_SCHEDULE, collect());
+        $urgentNotImportant   = $byKuadran->get(Todo::KUADRAN_DELEGATE, collect());
+        $notUrgentNotImportant = $byKuadran->get(Todo::KUADRAN_ELIMINATE, collect());
+
+        // Fallback: data lama tanpa kuadran → group berdasarkan priority dalam 1 query
+        $allEmpty = $urgentImportant->isEmpty()
+            && $notUrgentImportant->isEmpty()
+            && $urgentNotImportant->isEmpty()
+            && $notUrgentNotImportant->isEmpty();
+
+        if ($allEmpty) {
+            $byPriority = Todo::where('user_id', $userId)
                 ->where('status', '!=', 'completed')
-                ->get();
+                ->whereIn('priority', ['high', 'medium', 'low'])
+                ->get()
+                ->groupBy('priority');
 
-            $notUrgentImportant = Todo::where('user_id', $user->id)
-                ->where('priority', 'medium')
-                ->where('status', '!=', 'completed')
-                ->get();
-
-            $urgentNotImportant = Todo::where('user_id', $user->id)
-                ->where('priority', 'low')
-                ->where('status', '!=', 'completed')
-                ->get();
+            $urgentImportant    = $byPriority->get('high', collect());
+            $notUrgentImportant = $byPriority->get('medium', collect());
+            $urgentNotImportant = $byPriority->get('low', collect());
         }
-        
+
         return view('home', compact(
             'stats',
-            'urgentImportant', 'notUrgentImportant',
-            'urgentNotImportant', 'notUrgentNotImportant'
+            'urgentImportant',
+            'notUrgentImportant',
+            'urgentNotImportant',
+            'notUrgentNotImportant'
         ));
+    }
+
+    protected function computeStats(int $userId): array
+    {
+        $ttl = (int) config('todos.stats_cache_ttl', 60);
+
+        $resolver = function () use ($userId) {
+            $row = Todo::where('user_id', $userId)
+                ->selectRaw("
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
+                    SUM(CASE WHEN status <> 'completed' THEN 1 ELSE 0 END) AS pending,
+                    SUM(CASE WHEN status <> 'completed' AND due_date IS NOT NULL AND due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue,
+                    SUM(CASE WHEN sumber = 'google_classroom' THEN 1 ELSE 0 END) AS classroom
+                ")
+                ->first();
+
+            return [
+                'total'     => (int) ($row->total ?? 0),
+                'completed' => (int) ($row->completed ?? 0),
+                'pending'   => (int) ($row->pending ?? 0),
+                'overdue'   => (int) ($row->overdue ?? 0),
+                'classroom' => (int) ($row->classroom ?? 0),
+                'courses'   => Course::where('user_id', $userId)->count(),
+            ];
+        };
+
+        if ($ttl <= 0) {
+            return $resolver();
+        }
+
+        return cache()->remember("user:{$userId}:home_dashboard", $ttl, $resolver);
     }
 }

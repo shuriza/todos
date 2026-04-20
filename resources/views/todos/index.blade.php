@@ -5,83 +5,89 @@
                 <h2 class="text-xl font-bold text-gray-800">Semua Tugas</h2>
                 <p class="text-sm text-gray-500">Kelola semua tugas manual dan dari Google Classroom</p>
             </div>
-            <button @click="$dispatch('open-add-task')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+            <button @click="$dispatch('open-add-task')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Tambah Tugas
             </button>
         </div>
     </x-slot>
 
-    <div class="p-4 lg:p-6 space-y-5" x-data="todoListApp()">
+    <div class="p-4 lg:p-6 space-y-5" x-data="todoPageApp()">
 
         {{-- Search & Filter Bar --}}
-        <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+        <form method="GET" action="{{ route('todos.index') }}" class="bg-white rounded-xl border border-gray-200 p-4">
             <div class="flex flex-col lg:flex-row gap-3">
                 {{-- Search --}}
                 <div class="flex-1 relative">
                     <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" x-model="search" placeholder="Cari tugas..." class="w-full pl-9 pr-4 py-2.5 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Cari tugas..." class="w-full pl-9 pr-4 py-2.5 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                 </div>
 
-                {{-- Filter pills --}}
+                {{-- Filters --}}
                 <div class="flex items-center gap-2 flex-wrap">
-                    {{-- Status filter --}}
-                    <select x-model="statusFilter" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="all">Semua Status</option>
-                        <option value="todo">To Do</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Selesai</option>
+                    <select name="status" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="all" {{ ($filters['status'] ?? '') === 'all' || empty($filters['status'] ?? '') ? 'selected' : '' }}>Semua Status</option>
+                        <option value="todo" {{ ($filters['status'] ?? '') === 'todo' ? 'selected' : '' }}>To Do</option>
+                        <option value="in_progress" {{ ($filters['status'] ?? '') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                        <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>Selesai</option>
                     </select>
 
-                    {{-- Kuadran filter --}}
-                    <select x-model="kuadranFilter" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="all">Semua Kuadran</option>
-                        <option value="1">Q1 — Do Now</option>
-                        <option value="2">Q2 — Schedule</option>
-                        <option value="3">Q3 — Delegate</option>
-                        <option value="4">Q4 — Eliminate</option>
+                    <select name="kuadran" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="all" {{ ($filters['kuadran'] ?? '') === 'all' || empty($filters['kuadran'] ?? '') ? 'selected' : '' }}>Semua Kuadran</option>
+                        <option value="1" {{ ($filters['kuadran'] ?? '') === '1' ? 'selected' : '' }}>Q1 - Do Now</option>
+                        <option value="2" {{ ($filters['kuadran'] ?? '') === '2' ? 'selected' : '' }}>Q2 - Schedule</option>
+                        <option value="3" {{ ($filters['kuadran'] ?? '') === '3' ? 'selected' : '' }}>Q3 - Delegate</option>
+                        <option value="4" {{ ($filters['kuadran'] ?? '') === '4' ? 'selected' : '' }}>Q4 - Eliminate</option>
                     </select>
 
-                    {{-- Category filter --}}
-                    <select x-model="categoryFilter" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="all">Semua Kategori</option>
-                        <option value="kuliah">🎓 Kuliah</option>
-                        <option value="pekerjaan">💼 Pekerjaan</option>
-                        <option value="daily_activity">Daily Activity</option>
+                    <select name="category" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="all" {{ ($filters['category'] ?? '') === 'all' || empty($filters['category'] ?? '') ? 'selected' : '' }}>Semua Kategori</option>
+                        <option value="kuliah" {{ ($filters['category'] ?? '') === 'kuliah' ? 'selected' : '' }}>Kuliah</option>
+                        <option value="pekerjaan" {{ ($filters['category'] ?? '') === 'pekerjaan' ? 'selected' : '' }}>Pekerjaan</option>
+                        <option value="daily_activity" {{ ($filters['category'] ?? '') === 'daily_activity' ? 'selected' : '' }}>Daily Activity</option>
                     </select>
 
-                    {{-- Source filter --}}
-                    <select x-model="sumberFilter" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="all">Semua Sumber</option>
-                        <option value="manual">Manual</option>
-                        <option value="google_classroom">Google Classroom</option>
+                    <select name="sumber" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="all" {{ ($filters['sumber'] ?? '') === 'all' || empty($filters['sumber'] ?? '') ? 'selected' : '' }}>Semua Sumber</option>
+                        <option value="manual" {{ ($filters['sumber'] ?? '') === 'manual' ? 'selected' : '' }}>Manual</option>
+                        <option value="google_classroom" {{ ($filters['sumber'] ?? '') === 'google_classroom' ? 'selected' : '' }}>Google Classroom</option>
                     </select>
+
+                    {{-- Search submit button --}}
+                    <button type="submit" class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </button>
+
+                    {{-- Reset filters --}}
+                    @if (!empty(array_filter($filters ?? [])))
+                        <a href="{{ route('todos.index') }}" class="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">Reset</a>
+                    @endif
                 </div>
             </div>
-        </div>
+        </form>
 
         {{-- Quick Stats --}}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="bg-white rounded-lg border border-gray-200 p-3 text-center shadow-sm">
-                <div class="text-xl font-bold text-gray-900" x-text="filteredTodos.length"></div>
-                <div class="text-xs text-gray-500">Ditampilkan</div>
+            <div class="bg-white rounded-lg border border-gray-200 p-3 text-center">
+                <div class="text-xl font-bold text-gray-900">{{ $stats['total'] }}</div>
+                <div class="text-xs text-gray-500">Total</div>
             </div>
-            <div class="bg-white rounded-lg border border-gray-200 p-3 text-center shadow-sm">
-                <div class="text-xl font-bold text-green-600" x-text="todos.filter(t => t.status === 'completed').length"></div>
+            <div class="bg-white rounded-lg border border-gray-200 p-3 text-center">
+                <div class="text-xl font-bold text-green-600">{{ $stats['completed'] }}</div>
                 <div class="text-xs text-gray-500">Selesai</div>
             </div>
-            <div class="bg-white rounded-lg border border-gray-200 p-3 text-center shadow-sm">
-                <div class="text-xl font-bold text-yellow-600" x-text="todos.filter(t => t.status !== 'completed').length"></div>
+            <div class="bg-white rounded-lg border border-gray-200 p-3 text-center">
+                <div class="text-xl font-bold text-yellow-600">{{ $stats['pending'] }}</div>
                 <div class="text-xs text-gray-500">Belum Selesai</div>
             </div>
-            <div class="bg-white rounded-lg border border-gray-200 p-3 text-center shadow-sm">
-                <div class="text-xl font-bold text-red-600" x-text="todos.filter(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed').length"></div>
+            <div class="bg-white rounded-lg border border-gray-200 p-3 text-center">
+                <div class="text-xl font-bold text-red-600">{{ $stats['overdue'] }}</div>
                 <div class="text-xs text-gray-500">Terlambat</div>
             </div>
         </div>
 
         {{-- Task Table --}}
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
             {{-- Table header --}}
             <div class="hidden lg:grid lg:grid-cols-12 gap-4 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 <div class="col-span-1">Status</div>
@@ -95,100 +101,121 @@
 
             {{-- Table body --}}
             <div class="divide-y divide-gray-100">
-                <template x-for="todo in filteredTodos" :key="todo.id">
-                    <div class="px-5 py-4 hover:bg-gray-50 transition-colors group"
-                         :class="todo.status === 'completed' ? 'bg-gray-50/50' : ''">
+                @forelse ($todos as $todo)
+                    @php
+                        $isOverdue = $todo->due_date && $todo->due_date->isPast() && $todo->status !== 'completed';
+                        $kuadranColors = [1 => 'bg-red-100 text-red-700', 2 => 'bg-blue-100 text-blue-700', 3 => 'bg-yellow-100 text-yellow-700', 4 => 'bg-gray-100 text-gray-600'];
+                        $kuadranNames = [1 => 'Do Now', 2 => 'Schedule', 3 => 'Delegate', 4 => 'Eliminate'];
+                        $priorityColors = ['high' => 'bg-red-100 text-red-700', 'medium' => 'bg-yellow-100 text-yellow-700', 'low' => 'bg-green-100 text-green-700'];
+                        $priorityNames = ['high' => 'Tinggi', 'medium' => 'Sedang', 'low' => 'Rendah'];
+                    @endphp
+                    <div class="px-5 py-4 hover:bg-gray-50 transition-colors group {{ $todo->status === 'completed' ? 'bg-gray-50/50' : '' }}">
                         <div class="lg:grid lg:grid-cols-12 gap-4 flex flex-col lg:flex-row items-start lg:items-center">
                             {{-- Checkbox --}}
                             <div class="col-span-1 flex items-center">
-                                <button @click="toggleStatus(todo)"
-                                    class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors"
-                                    :class="todo.status === 'completed' ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-green-400'">
-                                    <svg x-show="todo.status === 'completed'" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                <button @click="toggleStatus({{ $todo->id }}, '{{ $todo->status }}')"
+                                    class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors {{ $todo->status === 'completed' ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-green-400' }}">
+                                    @if ($todo->status === 'completed')
+                                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                    @endif
                                 </button>
                             </div>
 
                             {{-- Title + Description --}}
-                            <div class="col-span-4 min-w-0 cursor-pointer" @click="openDetail(todo)">
-                                <p class="text-sm font-medium truncate"
-                                   :class="todo.status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-900'">
-                                    <span x-text="todo.title"></span>
+                            <div class="col-span-4 min-w-0 cursor-pointer" @click="openDetail({{ json_encode($todo->toArray()) }})">
+                                <p class="text-sm font-medium truncate {{ $todo->status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-900' }}">
+                                    {{ $todo->title }}
                                 </p>
                                 <div class="flex items-center gap-2 mt-1">
-                                    <span x-show="todo.course" class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
-                                        <span x-text="todo.course?.nama_course"></span>
-                                    </span>
-                                    <span x-show="todo.category" class="text-xs text-gray-500" x-text="getCategoryLabel(todo.category)"></span>
+                                    @if ($todo->course)
+                                        <span class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+                                            {{ $todo->course->nama_course }}
+                                        </span>
+                                    @endif
+                                    @if ($todo->category)
+                                        <span class="text-xs text-gray-500">{{ ucfirst(str_replace('_', ' ', $todo->category)) }}</span>
+                                    @endif
                                 </div>
                             </div>
 
                             {{-- Kuadran badge --}}
                             <div class="col-span-2">
-                                <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md"
-                                      :class="getKuadranBadgeClass(todo.kuadran)">
-                                    <span class="w-2 h-2 rounded-full" :class="getKuadranDotClass(todo.kuadran)"></span>
-                                    <span x-text="getKuadranName(todo.kuadran)"></span>
+                                <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md {{ $kuadranColors[$todo->kuadran] ?? 'bg-gray-100 text-gray-600' }}">
+                                    {{ $kuadranNames[$todo->kuadran] ?? '-' }}
                                 </span>
                             </div>
 
                             {{-- Deadline --}}
                             <div class="col-span-2">
-                                <template x-if="todo.due_date">
-                                    <span class="text-sm" :class="isOverdue(todo) ? 'text-red-600 font-medium' : 'text-gray-600'">
-                                        <span x-text="formatDate(todo.due_date)"></span>
-                                        <span x-show="todo.due_time" class="text-gray-400" x-text="', ' + todo.due_time"></span>
+                                @if ($todo->due_date)
+                                    <span class="text-sm {{ $isOverdue ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                                        {{ $todo->due_date->format('d M Y') }}
+                                        @if ($todo->due_time)
+                                            <span class="text-gray-400">, {{ $todo->due_time }}</span>
+                                        @endif
                                     </span>
-                                </template>
-                                <template x-if="!todo.due_date">
+                                @else
                                     <span class="text-xs text-gray-400">Tidak ada</span>
-                                </template>
+                                @endif
                             </div>
 
                             {{-- Priority --}}
                             <div class="col-span-1">
-                                <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-md uppercase"
-                                      :class="{
-                                          'bg-red-100 text-red-700': todo.priority === 'high',
-                                          'bg-yellow-100 text-yellow-700': todo.priority === 'medium',
-                                          'bg-green-100 text-green-700': todo.priority === 'low'
-                                      }"
-                                      x-text="todo.priority === 'high' ? 'Tinggi' : (todo.priority === 'medium' ? 'Sedang' : 'Rendah')">
+                                <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-md {{ $priorityColors[$todo->priority] ?? 'bg-gray-100 text-gray-600' }}">
+                                    {{ $priorityNames[$todo->priority] ?? $todo->priority }}
                                 </span>
                             </div>
 
                             {{-- Source --}}
                             <div class="col-span-1">
-                                <span x-show="todo.sumber === 'google_classroom'" class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-md">GC</span>
-                                <span x-show="todo.sumber !== 'google_classroom'" class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">Manual</span>
+                                @if ($todo->sumber === 'google_classroom')
+                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-md">GC</span>
+                                @else
+                                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">Manual</span>
+                                @endif
                             </div>
 
                             {{-- Actions --}}
                             <div class="col-span-1 flex items-center gap-1">
-                                <button @click="editTodo(todo)" class="p-1.5 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 opacity-0 group-hover:opacity-100 transition-all" title="Edit">
+                                <button @click="editTodo({{ json_encode($todo->toArray()) }})" class="p-1.5 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 opacity-0 group-hover:opacity-100 transition-all" title="Edit">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </button>
-                                <button @click="deleteTodo(todo.id)" class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all" title="Hapus">
+                                <button @click="deleteTodo({{ $todo->id }})" class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all" title="Hapus">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                 </button>
                             </div>
                         </div>
                     </div>
-                </template>
-
-                {{-- Empty State --}}
-                <div x-show="filteredTodos.length === 0" class="py-16 text-center">
-                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                @empty
+                    {{-- Empty State --}}
+                    <div class="py-16 text-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-1">Tidak ada tugas ditemukan</h3>
+                        <p class="text-sm text-gray-500 mb-4">Coba ubah filter atau tambah tugas baru</p>
+                        <button @click="$dispatch('open-add-task')" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Tambah Tugas
+                        </button>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Tidak ada tugas ditemukan</h3>
-                    <p class="text-sm text-gray-500 mb-4">Coba ubah filter atau tambah tugas baru</p>
-                    <button @click="$dispatch('open-add-task')" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        Tambah Tugas
-                    </button>
-                </div>
+                @endforelse
             </div>
+
+            {{-- Pagination --}}
+            @if ($todos->hasPages())
+                <div class="px-5 py-4 border-t border-gray-200">
+                    {{ $todos->links() }}
+                </div>
+            @endif
         </div>
+
+        {{-- Showing info --}}
+        @if ($todos->total() > 0)
+            <p class="text-xs text-gray-500 text-center">
+                Menampilkan {{ $todos->firstItem() }}-{{ $todos->lastItem() }} dari {{ $todos->total() }} tugas
+            </p>
+        @endif
 
         {{-- Task Detail Modal --}}
         <div x-show="showDetailModal" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click.self="showDetailModal = false">
@@ -219,7 +246,7 @@
                         <div><span class="text-gray-500 block text-xs mb-1">Deadline</span><span class="font-medium" x-text="selectedTask?.due_date ? formatDate(selectedTask.due_date) : 'Tidak ada'"></span></div>
                     </div>
                     <div class="mt-6 flex gap-3">
-                        <button @click="toggleStatus(selectedTask); showDetailModal = false" class="flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors"
+                        <button @click="toggleStatus(selectedTask?.id, selectedTask?.status); showDetailModal = false" class="flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors"
                                 :class="selectedTask?.status === 'completed' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-green-600 text-white hover:bg-green-700'">
                             <span x-text="selectedTask?.status === 'completed' ? 'Buka Kembali' : 'Tandai Selesai'"></span>
                         </button>
@@ -261,9 +288,9 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Prioritas</label>
                             <select x-model="form.priority" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option value="high">🔴 Tinggi</option>
-                                <option value="medium">🟡 Sedang</option>
-                                <option value="low">🟢 Rendah</option>
+                                <option value="high">Tinggi</option>
+                                <option value="medium">Sedang</option>
+                                <option value="low">Rendah</option>
                             </select>
                         </div>
                     </div>
@@ -282,7 +309,7 @@
                         <button type="submit" :disabled="saving" class="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed transition-colors">
                             <span x-show="!saving" x-text="editingId ? 'Simpan Perubahan' : 'Tambah Tugas'"></span>
                             <span x-show="saving" class="flex items-center justify-center gap-2">
-                                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                                 Menyimpan...
                             </span>
                         </button>
@@ -291,11 +318,4 @@
             </div>
         </div>
     </div>
-
-    @push('scripts')
-    <script id="todos-data" type="application/json">
-        @json($todos)
-    </script>
-    {{-- JS loaded from resources/js/pages/todos.js --}}
-    @endpush
 </x-app-layout>

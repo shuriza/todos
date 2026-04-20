@@ -307,9 +307,19 @@ class GoogleClassroomService
                 $dueDate = "{$year}-{$month}-{$day}";
 
                 if (isset($cw['dueTime'])) {
-                    $hours = str_pad($cw['dueTime']['hours'] ?? 0, 2, '0', STR_PAD_LEFT);
-                    $minutes = str_pad($cw['dueTime']['minutes'] ?? 0, 2, '0', STR_PAD_LEFT);
-                    $dueTime = "{$hours}:{$minutes}";
+                    $hours = (int) ($cw['dueTime']['hours'] ?? 0);
+                    $minutes = (int) ($cw['dueTime']['minutes'] ?? 0);
+
+                    // Google Classroom returns dueTime in UTC — convert to app timezone
+                    $utcDateTime = Carbon::createFromFormat(
+                        'Y-m-d H:i',
+                        "{$dueDate} " . str_pad($hours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($minutes, 2, '0', STR_PAD_LEFT),
+                        'UTC'
+                    )->setTimezone(config('app.timezone', 'Asia/Jakarta'));
+
+                    // Update dueDate in case timezone conversion crosses midnight
+                    $dueDate = $utcDateTime->format('Y-m-d');
+                    $dueTime = $utcDateTime->format('H:i');
                 }
             }
 
@@ -370,8 +380,21 @@ class GoogleClassroomService
                     $data['completed_at'] = now();
                 }
 
-                $existingTodo->update($data);
-                $updated++;
+                // Check if anything actually changed
+                $hasChanges = false;
+                foreach ($data as $key => $value) {
+                    if ($existingTodo->getAttribute($key) != $value) {
+                        $hasChanges = true;
+                        break;
+                    }
+                }
+
+                if ($hasChanges) {
+                    $existingTodo->update($data);
+                    $updated++;
+                } else {
+                    $skipped++;
+                }
             } else {
                 $data['status'] = $status;
                 $data['user_id'] = $this->user->id;

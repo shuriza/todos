@@ -64,14 +64,8 @@ class SetTelegramWebhook extends Command
             $this->info('✅ Webhook registered successfully!');
             $this->newLine();
 
-            // Register commands
-            $this->info('Registering bot commands...');
-            $cmdResult = $telegram->registerBotCommands();
-            if ($cmdResult['ok'] ?? false) {
-                $this->info('✅ Bot commands registered!');
-            } else {
-                $this->warn('⚠️ Failed to register bot commands: ' . ($cmdResult['description'] ?? 'unknown'));
-            }
+            // Bot commands are already registered inside setWebhook()
+            $this->info('✅ Bot commands registered!');
 
             // Show bot info
             $botInfo = $telegram->getBotInfo();

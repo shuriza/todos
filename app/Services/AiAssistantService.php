@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\AiConversation;
@@ -242,17 +243,18 @@ class AiAssistantService
             return ['success' => false, 'error' => 'Todo not found'];
         }
 
-        $prompt = "Analyze this todo item and provide helpful suggestions:\n\n"
-            . "Title: {$todo->title}\n"
-            . "Description: {$todo->description}\n"
-            . "Priority: {$todo->priority}\n"
+        $prompt = "Tolong analisis tugas ini dan berikan saran yang membantu secara singkat dan bersahabat:\n\n"
+            . "Judul: {$todo->title}\n"
+            . "Deskripsi: {$todo->description}\n"
+            . "Prioritas: {$todo->priority}\n"
             . "Status: {$todo->status}\n"
-            . "Due Date: {$todo->due_date}\n\n"
-            . "Please provide:\n"
-            . "1. Task breakdown (if complex)\n"
-            . "2. Time estimate\n"
-            . "3. Priority recommendation\n"
-            . "4. Related suggestions";
+            . "Deadline: {$todo->due_date}\n\n"
+            . "Tolong berikan (dalam pandangan seorang asisten belajar):\n"
+            . "1. Pemecahan tugas (jika terlihat cukup kompleks)\n"
+            . "2. Perkiraan waktu pengerjaan\n"
+            . "3. Rekomendasi prioritas\n"
+            . "4. Saran terkait lainnya\n"
+            . "Ingat, hindari kata-kata kaku seperti 'Sebagai AI Assistant' dan jawab dengan bahasa Indonesia yang interaktif.";
 
         $response = $this->chat($prompt, $userId, null, $todoId);
 
@@ -275,18 +277,19 @@ class AiAssistantService
     {
         $todos = Todo::where('user_id', $userId)
             ->where('status', '!=', 'completed')
-            ->orderBy('priority', 'desc')
+            ->orderByRaw("CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END")
             ->orderBy('due_date', 'asc')
             ->get();
 
         $todoList = $todos->map(fn($t) => "- [{$t->priority}] {$t->title} (Due: {$t->due_date})")->join("\n");
 
-        $prompt = "Based on these todos, help me plan my day effectively:\n\n{$todoList}\n\n"
-            . "Please provide:\n"
-            . "1. Prioritized action plan\n"
-            . "2. Time management suggestions\n"
-            . "3. Productivity tips\n"
-            . "4. Focus areas for today";
+        $prompt = "Berdasarkan daftar tugas ini, tolong bantu saya merencanakan hari saya secara efektif:\n\n{$todoList}\n\n"
+            . "Tolong berikan (sebagai asisten belajar personal):\n"
+            . "1. Rencana aksi yang sudah diprioritaskan\n"
+            . "2. Saran manajemen waktu\n"
+            . "3. Tips produktivitas\n"
+            . "4. Fokus utama untuk hari ini\n"
+            . "Ingat, hindari kata-kata kaku seperti 'Sebagai AI Assistant' dan jawab dengan bahasa Indonesia yang natural dan ramah.";
 
         return $this->chat($prompt, $userId);
     }
@@ -297,6 +300,7 @@ class AiAssistantService
 
     /**
      * Build system prompt enriched with user's current tasks.
+     * Context tugas di-cache per user (lihat config/ai.php context.cache_ttl).
      */
     protected function buildSystemPrompt(int $userId): string
     {
@@ -304,25 +308,10 @@ class AiAssistantService
         $currentTime = now()->format('H:i');
         $dayName = now()->locale('id')->dayName;
 
-        // Fetch user's active tasks for context
-        $activeTasks = Todo::where('user_id', $userId)
-            ->where('status', '!=', 'completed')
-            ->orderBy('due_date', 'asc')
-            ->limit(30)
-            ->get();
-
-        $taskContext = '';
-        if ($activeTasks->isNotEmpty()) {
-            $taskLines = $activeTasks->map(function ($t) {
-                $due = $t->due_date ? $t->due_date->format('Y-m-d') : 'no deadline';
-                $time = $t->due_time ?? '';
-                return "- [{$t->priority}][Q{$t->kuadran}] {$t->title} (deadline: {$due} {$time}, status: {$t->status}, kategori: {$t->category})";
-            })->join("\n");
-            $taskContext = "\n\n=== TUGAS AKTIF USER SAAT INI ===\n{$taskLines}\n=== END TUGAS ===";
-        }
+        $taskContext = $this->buildTaskContext($userId);
 
         return <<<PROMPT
-Kamu adalah AI Assistant cerdas untuk aplikasi manajemen tugas mahasiswa. Hari ini adalah {$dayName}, {$today}. Waktu sekarang: {$currentTime} WIB.
+Kamu adalah asisten belajar personal cerdas untuk mahasiswa. Hari ini adalah {$dayName}, {$today}. Waktu sekarang: {$currentTime} WIB.
 
 PENTING: Gunakan waktu {$currentTime} WIB sebagai acuan. JANGAN berasumsi jam berapa sekarang. Jika user bilang "5 menit lagi" maka hitung dari {$currentTime}.
 
@@ -355,13 +344,58 @@ Baik, saya buatkan 3 tugas untuk mata kuliah Basis Data:
 Tugas sudah saya atur prioritasnya. Kamu bisa konfirmasi untuk menambahkan ke daftar tugas, atau minta saya ubah dulu.
 
 ATURAN UMUM:
-- Jawab dalam Bahasa Indonesia yang natural dan ramah
-- Gunakan emoji secukupnya untuk kesan friendly
+- Jawab dalam Bahasa Indonesia yang natural dan ramah, hindari kata-kata kaku.
+- PENTING: DILARANG KERAS mengatakan "Sebagai AI", "Saya adalah AI", "Sebagai asisten", "Sebagai model bahasa", atau kalimat serupa yang mengidentifikasi dirimu sebagai AI. Bertingkahlah seolah-olah kamu adalah seorang asisten belajar personal manusia yang ramah.
+- JANGAN gunakan emoji sama sekali dalam respons. Tulis dengan teks biasa yang bersih dan profesional.
 - Jika user tanya hal di luar manajemen tugas, tetap jawab dengan helpful
 - Perhatikan tugas-tugas user yang sudah ada agar tidak membuat duplikat
 - Jika user bilang "ingatkan" atau "reminder", buatkan tugas dengan deadline sesuai permintaan
 {$taskContext}
 PROMPT;
+    }
+
+    /**
+     * Build — dan cache — task context yang disisipkan ke system prompt.
+     * TTL dikonfigurasi di config/ai.php (context.cache_ttl).
+     */
+    protected function buildTaskContext(int $userId): string
+    {
+        $ttl   = (int) config('ai.context.cache_ttl', 300);
+        $limit = (int) config('ai.context.active_task_limit', 30);
+
+        $resolver = function () use ($userId, $limit) {
+            $activeTasks = Todo::where('user_id', $userId)
+                ->where('status', '!=', 'completed')
+                ->orderBy('due_date', 'asc')
+                ->limit($limit)
+                ->get(['id', 'title', 'priority', 'kuadran', 'due_date', 'due_time', 'status', 'category']);
+
+            if ($activeTasks->isEmpty()) {
+                return '';
+            }
+
+            $taskLines = $activeTasks->map(function ($t) {
+                $due  = $t->due_date ? $t->due_date->format('Y-m-d') : 'no deadline';
+                $time = $t->due_time ?? '';
+                return "- [{$t->priority}][Q{$t->kuadran}] {$t->title} (deadline: {$due} {$time}, status: {$t->status}, kategori: {$t->category})";
+            })->join("\n");
+
+            return "\n\n=== TUGAS AKTIF USER SAAT INI ===\n{$taskLines}\n=== END TUGAS ===";
+        };
+
+        if ($ttl <= 0) {
+            return $resolver();
+        }
+
+        return Cache::remember("user:{$userId}:ai_task_context", $ttl, $resolver);
+    }
+
+    /**
+     * Invalidate cache context AI untuk user (dipanggil setelah create/update/delete todo).
+     */
+    public static function forgetTaskContextCache(int $userId): void
+    {
+        Cache::forget("user:{$userId}:ai_task_context");
     }
 
     /**
@@ -374,6 +408,9 @@ PROMPT;
 
         if (preg_match('/<!--TASKS_START-->\s*(.*?)\s*<!--TASKS_END-->/s', $raw, $matches)) {
             $jsonStr = trim($matches[1]);
+            
+            // Clean up possible markdown code blocks inside the string (e.g. ```json ... ```)
+            $jsonStr = preg_replace('/^```(?:json)?\s*(.*?)\s*```$/s', '$1', $jsonStr);
 
             $decoded = json_decode($jsonStr, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
@@ -389,8 +426,9 @@ PROMPT;
                 ]);
             }
 
-            // Remove the task block from displayed message
-            $cleanMessage = preg_replace('/<!--TASKS_START-->.*?<!--TASKS_END-->/s', '', $raw);
+            // Remove the task block from displayed message, including any wrapping markdown if present
+            $cleanMessage = preg_replace('/```(?:json)?\s*<!--TASKS_START-->.*?<!--TASKS_END-->\s*```/s', '', $raw);
+            $cleanMessage = preg_replace('/<!--TASKS_START-->.*?<!--TASKS_END-->/s', '', $cleanMessage);
             $cleanMessage = trim($cleanMessage);
         }
 

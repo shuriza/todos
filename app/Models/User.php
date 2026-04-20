@@ -99,6 +99,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get AI suggestions for the user.
+     */
+    public function aiSuggestions(): HasMany
+    {
+        return $this->hasMany(AiSuggestion::class);
+    }
+
+    /**
      * Check if user has Google Classroom connected.
      */
     public function hasGoogleClassroom(): bool

@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\AiAssistantService;
+use App\Http\Requests\Ai\ChatRequest;
+use App\Http\Requests\Ai\ConfirmTasksRequest;
 use App\Models\AiConversation;
+use App\Models\Todo;
+use App\Services\AiAssistantService;
+use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AiAssistantController extends Controller
 {
-    protected $aiService;
-
-    public function __construct(AiAssistantService $aiService)
+    public function __construct(protected AiAssistantService $aiService)
     {
-        $this->aiService = $aiService;
     }
 
     /**
@@ -26,14 +27,11 @@ class AiAssistantController extends Controller
 
     /**
      * Send a message to AI assistant.
+     * Ownership todo_id divalidasi lewat ChatRequest (OwnedByUser).
      */
-    public function chat(Request $request)
+    public function chat(ChatRequest $request)
     {
-        $validated = $request->validate([
-            'message' => 'required|string',
-            'session_id' => 'nullable|string',
-            'todo_id' => 'nullable|exists:todos,id',
-        ]);
+        $validated = $request->validated();
 
         $response = $this->aiService->chat(
             $validated['message'],
@@ -46,12 +44,15 @@ class AiAssistantController extends Controller
     }
 
     /**
-     * Get conversation history.
+     * Get conversation history. History di-paginate untuk menghindari load 500+ msg.
      */
     public function history(Request $request, string $sessionId)
     {
+        $limit = min((int) $request->input('limit', config('ai.history.max_messages', 50)), 200);
+
         $conversations = AiConversation::bySession($sessionId)
             ->where('user_id', Auth::id())
+            ->limit($limit)
             ->get();
 
         return response()->json($conversations);
@@ -59,9 +60,20 @@ class AiAssistantController extends Controller
 
     /**
      * Get AI suggestions for a todo.
+     * Cek ownership via Todo model + Policy sebelum minta suggestion.
      */
     public function suggestions(Request $request, int $todoId)
     {
+        $todo = Todo::find($todoId);
+
+        if (!$todo) {
+            return ApiResponse::notFound('Tugas tidak ditemukan');
+        }
+
+        if ($todo->user_id !== Auth::id()) {
+            return ApiResponse::forbidden();
+        }
+
         $response = $this->aiService->generateSuggestions($todoId, Auth::id());
 
         return response()->json($response);
@@ -80,21 +92,9 @@ class AiAssistantController extends Controller
     /**
      * Confirm and create tasks from AI preview.
      */
-    public function confirmTasks(Request $request)
+    public function confirmTasks(ConfirmTasksRequest $request)
     {
-        $validated = $request->validate([
-            'tasks'   => 'required|array|min:1',
-            'tasks.*.title'       => 'required|string|max:255',
-            'tasks.*.description' => 'nullable|string',
-            'tasks.*.category'    => 'nullable|string|in:kuliah,pekerjaan,daily_activity',
-            'tasks.*.priority'    => 'nullable|string|in:high,medium,low',
-            'tasks.*.kuadran'     => 'nullable|integer|in:1,2,3,4',
-            'tasks.*.due_date'    => 'nullable|date',
-            'tasks.*.due_time'    => 'nullable|string',
-            'tasks.*.reminder_minutes' => 'nullable|integer|min:1|max:2880',
-        ]);
-
-        $result = $this->aiService->confirmTasks($validated['tasks'], Auth::id());
+        $result = $this->aiService->confirmTasks($request->validated()['tasks'], Auth::id());
 
         return response()->json($result);
     }
@@ -113,7 +113,7 @@ class AiAssistantController extends Controller
                 $firstMessage = AiConversation::where('session_id', $item->session_id)
                     ->where('role', 'user')
                     ->first();
-                
+
                 return [
                     'session_id' => $item->session_id,
                     'preview' => $firstMessage ? substr($firstMessage->message, 0, 50) . '...' : '',
