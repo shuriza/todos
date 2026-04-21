@@ -641,6 +641,9 @@ class TelegramBotService
             // Complete task
             str_starts_with($data, 'complete_task_') => $this->handleCompleteTask($callbackId, $chatId, $messageId, $user, $data),
 
+            // Undo complete task
+            str_starts_with($data, 'undo_complete_') => $this->handleUndoComplete($callbackId, $chatId, $messageId, $user, $data),
+
             // Selesai pagination
             str_starts_with($data, 'selesai_page_') => $this->handleSelesaiPage($callbackId, $chatId, $messageId, $user, $data),
 
@@ -764,9 +767,13 @@ class TelegramBotService
             . "Deadline: {$due}\n"
             . "Selesai: " . now()->translatedFormat('d M Y, H:i');
 
-        // Add keyboard to go back to selesai list or menu
+        // Add keyboard: undo option + navigation
         $remaining = $user->todos()->where('status', '!=', 'completed')->count();
-        $keyboard = [];
+        $keyboard = [
+            [
+                ['text' => 'Batalkan (undo)', 'callback_data' => "undo_complete_{$todo->id}"],
+            ],
+        ];
         if ($remaining > 0) {
             $keyboard[] = [
                 ['text' => "Sisa tugas ({$remaining})", 'callback_data' => 'menu_selesai'],
@@ -778,6 +785,62 @@ class TelegramBotService
 
         $replyMarkup = json_encode(['inline_keyboard' => $keyboard]);
         $this->telegram->editMessageText($chatId, $messageId, $completedMsg, [
+            'reply_markup' => $replyMarkup,
+        ]);
+    }
+
+    /**
+     * Handle undo_complete_{id} callback — revert a completed task back to todo.
+     */
+    protected function handleUndoComplete(string $callbackId, string $chatId, int $messageId, ?User $user, string $data): void
+    {
+        if (!$user) {
+            $this->telegram->answerCallbackQuery($callbackId, 'User tidak ditemukan', true);
+            return;
+        }
+
+        $todoId = (int) str_replace('undo_complete_', '', $data);
+        $todo = Todo::where('id', $todoId)->where('user_id', $user->id)->first();
+
+        if (!$todo) {
+            $this->telegram->answerCallbackQuery($callbackId, 'Tugas tidak ditemukan', true);
+            return;
+        }
+
+        if ($todo->status !== 'completed') {
+            $this->telegram->answerCallbackQuery($callbackId, 'Tugas sudah aktif, tidak perlu dibatalkan', true);
+            return;
+        }
+
+        // Revert to todo status
+        $todo->update([
+            'status' => 'todo',
+            'completed_at' => null,
+        ]);
+
+        $this->telegram->answerCallbackQuery($callbackId, 'Penyelesaian dibatalkan');
+
+        // Update the message to show reverted state
+        $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : '-';
+        $revertedMsg = "<b>Tugas Dikembalikan ke Aktif</b>\n"
+            . "────────────────────\n"
+            . "<b>{$todo->title}</b>\n"
+            . "Deadline: {$due}\n"
+            . "Kuadran: Q{$todo->kuadran}\n\n"
+            . "<i>Tugas kembali ke daftar aktif.</i>";
+
+        $keyboard = [
+            [
+                ['text' => 'Selesaikan Lagi', 'callback_data' => "complete_task_{$todo->id}"],
+            ],
+            [
+                ['text' => 'Daftar Selesaikan', 'callback_data' => 'menu_selesai'],
+                ['text' => 'Menu Utama', 'callback_data' => 'menu_start'],
+            ],
+        ];
+
+        $replyMarkup = json_encode(['inline_keyboard' => $keyboard]);
+        $this->telegram->editMessageText($chatId, $messageId, $revertedMsg, [
             'reply_markup' => $replyMarkup,
         ]);
     }
