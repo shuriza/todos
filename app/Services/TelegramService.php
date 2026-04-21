@@ -77,10 +77,13 @@ class TelegramService
      */
     public function testConnection(string $chatId): array
     {
-        $message = "✅ <b>Koneksi berhasil!</b>\n\n"
-            . "Notifikasi Telegram aktif.\n"
-            . "Kamu akan menerima pengingat deadline, rangkuman harian, peringatan overdue, dan notifikasi Classroom.\n\n"
-            . "Kelola di Profil & Pengaturan.";
+        $message = "<b>Koneksi Telegram Berhasil</b>\n\n"
+            . "Bot akan mengirim notifikasi sesuai preferensi kamu:\n"
+            . "• Pengingat sebelum deadline\n"
+            . "• Peringatan tugas lewat deadline\n"
+            . "• Rangkuman harian\n"
+            . "• Notifikasi sinkronisasi Classroom\n\n"
+            . "Atur jenis notifikasi yang diterima di halaman Profil.";
 
         return $this->sendMessage($chatId, $message);
     }
@@ -96,25 +99,26 @@ class TelegramService
 
         $deadline = $todo->deadline?->translatedFormat('d M Y, H:i') ?? '-';
         $kuadranLabel = Todo::KUADRAN_LABELS[$todo->kuadran] ?? 'Belum ditentukan';
-        $source = $todo->sumber === 'google_classroom' ? '📚 Classroom' : '📝 Manual';
+        $source = $todo->sumber === 'google_classroom' ? 'Google Classroom' : 'dibuat manual';
 
-        $message = "⏰ <b>Pengingat Deadline</b>\n\n"
+        $message = "<b>Pengingat Deadline</b>\n\n"
             . "<b>{$todo->title}</b>\n"
-            . "Deadline: {$deadline}\n"
-            . "Kuadran: {$kuadranLabel} · {$source}\n";
+            . "Tenggat: {$deadline}\n"
+            . "Kuadran Q{$todo->kuadran} — {$kuadranLabel}\n"
+            . "Sumber: {$source}\n";
 
         if ($todo->description) {
-            $desc = mb_substr(strip_tags($todo->description), 0, 100);
-            $message .= "{$desc}...\n";
+            $desc = mb_substr(strip_tags($todo->description), 0, 120);
+            $message .= "\n<i>{$desc}</i>\n";
         }
 
         if ($todo->course) {
-            $message .= "Matkul: {$todo->course->nama_course}\n";
+            $message .= "Mata kuliah: {$todo->course->nama_course}\n";
         }
 
         $keyboard = [
             [
-                ['text' => '✅ Selesai', 'callback_data' => "complete_task_{$todo->id}"],
+                ['text' => 'Tandai Selesai', 'callback_data' => "complete_task_{$todo->id}"],
             ],
         ];
 
@@ -146,16 +150,18 @@ class TelegramService
 
         $deadline = $todo->deadline?->translatedFormat('d M Y, H:i') ?? '-';
         $kuadranLabel = Todo::KUADRAN_LABELS[$todo->kuadran] ?? '-';
+        $daysLate = $todo->deadline ? (int) now()->startOfDay()->diffInDays($todo->deadline->startOfDay(), false) : 0;
+        $lateText = $daysLate < 0 ? abs($daysLate) . ' hari lalu' : 'baru saja';
 
-        $message = "⚠ <b>Tugas Overdue</b>\n\n"
+        $message = "<b>Tugas Lewat Deadline</b>\n\n"
             . "<b>{$todo->title}</b>\n"
-            . "Deadline: {$deadline}\n"
-            . "Kuadran: {$kuadranLabel}\n"
-            . "Status: <b>OVERDUE</b>";
+            . "Tenggat: {$deadline}\n"
+            . "Terlambat: {$lateText}\n"
+            . "Kuadran Q{$todo->kuadran} — {$kuadranLabel}";
 
         $keyboard = [
             [
-                ['text' => '✅ Selesai', 'callback_data' => "complete_task_{$todo->id}"],
+                ['text' => 'Tandai Selesai', 'callback_data' => "complete_task_{$todo->id}"],
             ],
         ];
 
@@ -206,23 +212,22 @@ class TelegramService
             . now()->translatedFormat('l, d F Y') . "\n\n";
 
         if ($todayTodos->count() > 0) {
-            $message .= "<b>Hari Ini</b> ({$todayTodos->count()})\n";
+            $message .= "<b>Deadline Hari Ini</b> ({$todayTodos->count()})\n";
             foreach ($todayTodos->take(5) as $i => $todo) {
-                $emoji = match($todo->kuadran) {
-                    1 => '🔴', 2 => '🟡', 3 => '🟠', 4 => '⚪', default => '○'
-                };
-                $message .= "{$emoji} " . ($i + 1) . ". {$todo->title}\n";
+                $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$todo->title}\n";
             }
             if ($todayTodos->count() > 5) {
                 $message .= "<i>+" . ($todayTodos->count() - 5) . " lainnya</i>\n";
             }
             $message .= "\n";
         } else {
-            $message .= "Tidak ada deadline hari ini.\n\n";
+            $message .= "<i>Tidak ada tugas yang jatuh tempo hari ini.</i>\n\n";
         }
 
-        $message .= "<b>Statistik</b>\n"
-            . "Belum selesai: {$totalPending} · Overdue: {$overdueTodos} · Selesai hari ini: {$completedToday}";
+        $message .= "<b>Progres</b>\n"
+            . "Belum selesai: {$totalPending}\n"
+            . "Lewat deadline: {$overdueTodos}\n"
+            . "Diselesaikan hari ini: {$completedToday}";
 
         $result = $this->sendMessage($user->telegram_chat_id, $message);
 
@@ -249,24 +254,24 @@ class TelegramService
         }
 
         $total = $todos->count();
-        $message = "🚨 <b>Ringkasan Tugas Terlambat</b>\n"
-            . "Kamu punya <b>{$total} tugas</b> yang melewati tenggat.\n\n";
+        $message = "<b>Ringkasan Tugas Terlambat</b>\n"
+            . "Ada <b>{$total} tugas</b> yang sudah melewati tenggat.\n\n";
 
         foreach ($todos->take(5) as $i => $todo) {
             $deadline = $todo->deadline;
             $daysLate = $deadline ? (int) now()->startOfDay()->diffInDays($deadline->startOfDay(), false) : 0;
             $lateText = $daysLate < 0 ? abs($daysLate) . ' hari lalu' : 'hari ini';
             $title = htmlspecialchars($todo->title, ENT_QUOTES, 'UTF-8');
-            $message .= ($i + 1) . ". {$title}\n";
-            $message .= "   <i>Terlambat {$lateText}</i>\n";
+            $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$title}\n"
+                . "     <i>Terlambat {$lateText}</i>\n";
         }
 
         if ($total > 5) {
             $remaining = $total - 5;
-            $message .= "\n<i>+{$remaining} tugas lainnya...</i>\n";
+            $message .= "\n<i>+{$remaining} tugas lainnya</i>\n";
         }
 
-        $message .= "\n📋 Buka aplikasi untuk menyelesaikan atau menghapusnya.";
+        $message .= "\n<i>Tandai selesai via /selesai atau buka aplikasi untuk kelola.</i>";
 
         $result = $this->sendMessage($user->telegram_chat_id, $message);
 
@@ -289,17 +294,16 @@ class TelegramService
             return null;
         }
 
-        $message = "📚 <b>Sync Classroom</b>\n\n"
-            . "Selesai!\n";
+        $message = "<b>Sinkronisasi Google Classroom Selesai</b>\n\n";
 
         if ($newTasks > 0) {
-            $message .= "Tugas baru: {$newTasks}\n";
+            $message .= "Tugas baru ditambahkan: {$newTasks}\n";
         }
         if ($updatedTasks > 0) {
-            $message .= "Diperbarui: {$updatedTasks}\n";
+            $message .= "Tugas diperbarui: {$updatedTasks}\n";
         }
 
-        $message .= "\n📋 Cek daftar tugas untuk melihat detail.";
+        $message .= "\n<i>Lihat detail: /tugas</i>";
 
         $result = $this->sendMessage($user->telegram_chat_id, $message);
 

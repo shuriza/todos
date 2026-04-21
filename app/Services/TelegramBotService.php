@@ -117,15 +117,16 @@ class TelegramBotService
         }
 
         $name = $user->name;
-        $time = now()->format('H.i.s');
 
-        $message = "Halo <b>{$name}</b>! 👋\n\n"
-            . "Saya <b>Asisten Tugas Polinema</b>, siap membantu:\n"
-            . "• Lihat & kelola tugas\n"
-            . "• Buat tugas baru via AI\n"
-            . "• Cek statistik & planning harian\n\n"
-            . "Pilih menu di bawah atau ketik pesan langsung 👇\n"
-            . "╰➤ <i>Refresh at {$time} WIB</i>";
+        $message = "Halo <b>{$name}</b>.\n\n"
+            . "Ini <b>Asisten Tugas Polinema</b>. Saya bisa bantu:\n"
+            . "• Lihat daftar tugas &amp; status\n"
+            . "• Tandai tugas selesai\n"
+            . "• Buat tugas baru (cukup ketik apa yang ingin dikerjakan)\n"
+            . "• Bikin planning harian\n\n"
+            . "<b>Cara pakai:</b>\n"
+            . "Pilih tombol di bawah, atau <b>ketik pesan apa saja</b> untuk bertanya/ngobrol dengan AI.\n\n"
+            . "Ketik /help kalau butuh penjelasan lengkap.";
 
         // Reply keyboard (collapsible - toggle via keyboard icon)
         $replyKeyboard = [
@@ -159,23 +160,30 @@ class TelegramBotService
      */
     protected function commandHelp(string $chatId): void
     {
-        $message = "<b>Bantuan</b>\n\n"
-            . "<b>Perintah:</b>\n"
+        $message = "<b>Panduan Bot</b>\n\n"
+
+            . "<b>Perintah</b>\n"
             . "/start — Menu utama\n"
-            . "/tugas — Semua tugas aktif\n"
+            . "/tugas — Daftar tugas aktif\n"
             . "/hari_ini — Deadline hari ini\n"
-            . "/mendesak — Tugas mendesak\n"
+            . "/mendesak — Tugas penting &amp; overdue\n"
             . "/selesai — Tandai tugas selesai\n"
-            . "/statistik — Statistik\n"
-            . "/planning — Planning harian AI\n"
-            . "/baru — Sesi chat baru\n"
-            . "/help — Bantuan\n\n"
-            . "<b>Chat AI:</b>\n"
-            . "Ketik pesan apapun untuk chat dengan AI.\n\n"
-            . "<b>Contoh:</b>\n"
-            . "• <i>Tugas apa yang harus dikerjakan hari ini?</i>\n"
-            . "• <i>Buatkan tugas belajar algoritma besok jam 10</i>\n"
-            . "• <i>Bantu breakdown tugas skripsi</i>";
+            . "/statistik — Ringkasan angka\n"
+            . "/planning — Saran urutan kerja dari AI\n"
+            . "/baru — Mulai sesi chat baru\n\n"
+
+            . "<b>Chat dengan AI</b>\n"
+            . "Ketik pesan apa saja untuk bertanya atau membuat tugas. Contoh:\n"
+            . "<i>• Apa yang harus saya kerjakan duluan?</i>\n"
+            . "<i>• Buat tugas belajar algoritma besok jam 10</i>\n"
+            . "<i>• Bantu breakdown skripsi jadi beberapa tugas kecil</i>\n\n"
+
+            . "<b>Tentang Kuadran (Q1–Q4)</b>\n"
+            . "Q1 — <b>Do Now</b>: penting &amp; mendesak\n"
+            . "Q2 — <b>Schedule</b>: penting tapi belum mendesak\n"
+            . "Q3 — <b>Delegate</b>: mendesak tapi kurang penting\n"
+            . "Q4 — <b>Eliminate</b>: tidak penting &amp; tidak mendesak\n\n"
+            . "<i>Kuadran otomatis ditentukan dari deadline &amp; prioritas tugas.</i>";
 
         $this->telegram->sendMessage($chatId, $message);
     }
@@ -199,23 +207,23 @@ class TelegramBotService
             ->get();
 
         if ($todos->isEmpty()) {
-            $this->telegram->sendMessage($chatId, "Tidak ada tugas aktif. Semua selesai! ✅");
+            $this->telegram->sendMessage($chatId, "Tidak ada tugas aktif. Semua sudah selesai.");
             return;
         }
 
-        $message = "<b>Tugas Aktif</b> ({$todos->count()})\n\n";
+        $message = "<b>Tugas Aktif</b> ({$todos->count()})\n"
+            . "<i>Diurutkan berdasarkan kuadran &amp; deadline</i>\n\n";
 
         foreach ($todos as $i => $todo) {
-            $emoji = $this->priorityEmoji($todo);
-            $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : '-';
-            $status = $todo->status === 'in_progress' ? '⏳' : '○';
-            $message .= "{$status} {$emoji} " . ($i + 1) . ". {$todo->title}\n"
-                . "     {$due} · Q{$todo->kuadran} · {$todo->priority}\n";
+            $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : 'tanpa deadline';
+            $progress = $todo->status === 'in_progress' ? ' · <i>dikerjakan</i>' : '';
+            $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$todo->title}\n"
+                . "     {$due}{$progress}\n";
         }
 
         $total = $user->todos()->where('status', '!=', 'completed')->count();
         if ($total > 20) {
-            $message .= "\n<i>+" . ($total - 20) . " tugas lainnya</i>";
+            $message .= "\n<i>+" . ($total - 20) . " tugas lainnya — buka web untuk lihat semua</i>";
         }
 
         $this->telegram->sendMessage($chatId, $message);
@@ -239,21 +247,20 @@ class TelegramBotService
             ->get();
 
         if ($todos->isEmpty()) {
-            $this->telegram->sendMessage($chatId, "Tidak ada deadline hari ini ✅\nCek semua tugas: /tugas");
+            $this->telegram->sendMessage($chatId, "Tidak ada deadline hari ini.\nLihat semua tugas: /tugas");
             return;
         }
 
-        $message = "<b>Tugas Hari Ini</b> — " . now()->translatedFormat('d M Y') . "\n\n";
+        $message = "<b>Tugas Hari Ini</b>\n"
+            . now()->translatedFormat('l, d F Y') . "\n\n";
 
         foreach ($todos as $i => $todo) {
-            $emoji = $this->priorityEmoji($todo);
-            $time = $todo->due_time ?? '';
-            $timeStr = $time ? " ({$time})" : '';
-            $status = $todo->status === 'in_progress' ? '⏳' : '○';
-            $message .= "{$status} {$emoji} " . ($i + 1) . ". {$todo->title}{$timeStr}\n";
+            $timeStr = $todo->due_time ? " · pukul {$todo->due_time}" : '';
+            $progress = $todo->status === 'in_progress' ? ' · <i>dikerjakan</i>' : '';
+            $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$todo->title}{$timeStr}{$progress}\n";
 
             if ($todo->course) {
-                $message .= "     ↳ {$todo->course->nama_course}\n";
+                $message .= "     <i>dari {$todo->course->nama_course}</i>\n";
             }
         }
 
@@ -285,17 +292,21 @@ class TelegramBotService
             ->get();
 
         if ($todos->isEmpty() && $overdue->isEmpty()) {
-            $this->telegram->sendMessage($chatId, "Tidak ada tugas mendesak ✅");
+            $this->telegram->sendMessage($chatId, "Tidak ada tugas mendesak saat ini.");
             return;
         }
 
-        $message = "<b>Tugas Mendesak</b>\n\n";
+        $message = "<b>Tugas Mendesak</b>\n"
+            . "<i>Tugas lewat deadline &amp; kuadran 1 (penting + mendesak)</i>\n\n";
 
         if ($overdue->isNotEmpty()) {
-            $message .= "<b>Overdue</b> ({$overdue->count()})\n";
+            $message .= "<b>Lewat Deadline</b> ({$overdue->count()})\n";
             foreach ($overdue->take(5) as $i => $todo) {
                 $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : '-';
-                $message .= "⚠ " . ($i + 1) . ". {$todo->title} — {$due}\n";
+                $daysLate = $todo->due_date ? now()->startOfDay()->diffInDays($todo->due_date->startOfDay()) : 0;
+                $lateStr = $daysLate > 0 ? " ({$daysLate} hari lalu)" : '';
+                $message .= ($i + 1) . ". {$todo->title}\n"
+                    . "     Deadline: {$due}{$lateStr}\n";
             }
             if ($overdue->count() > 5) {
                 $message .= "<i>+" . ($overdue->count() - 5) . " lainnya</i>\n";
@@ -306,10 +317,12 @@ class TelegramBotService
         if ($todos->isNotEmpty()) {
             $message .= "<b>Kuadran 1 — Do Now</b> ({$todos->count()})\n";
             foreach ($todos as $i => $todo) {
-                $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : '-';
-                $message .= "🔴 " . ($i + 1) . ". {$todo->title} — {$due}\n";
+                $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : 'tanpa deadline';
+                $message .= ($i + 1) . ". {$todo->title} — {$due}\n";
             }
         }
+
+        $message .= "\nTandai selesai: /selesai";
 
         $this->telegram->sendMessage($chatId, $message);
     }
@@ -337,34 +350,27 @@ class TelegramBotService
         $q3 = $user->todos()->where('status', '!=', 'completed')->where('kuadran', 3)->count();
         $q4 = $user->todos()->where('status', '!=', 'completed')->where('kuadran', 4)->count();
 
-        // Priority breakdown
-        $high = $user->todos()->where('status', '!=', 'completed')->where('priority', 'high')->count();
-        $medium = $user->todos()->where('status', '!=', 'completed')->where('priority', 'medium')->count();
-        $low = $user->todos()->where('status', '!=', 'completed')->where('priority', 'low')->count();
-
         $total = $totalActive + $totalCompleted;
         $pctDone = $total > 0 ? round($totalCompleted / $total * 100) : 0;
 
         $message = "<b>Statistik Tugas</b>\n"
             . now()->translatedFormat('l, d F Y') . "\n\n"
 
-            . "<b>Overview</b>\n"
-            . "Total: {$total} · Selesai: {$totalCompleted} ({$pctDone}%)\n"
-            . "Aktif: {$totalActive} · Dikerjakan: {$inProgress}\n"
-            . "Overdue: {$overdue} · Hari ini: {$todayDue}\n"
-            . "Selesai hari ini: {$completedToday}\n\n"
+            . "<b>Ringkasan</b>\n"
+            . "Total tugas: {$total}\n"
+            . "Selesai: {$totalCompleted} ({$pctDone}%)\n"
+            . "Aktif: {$totalActive} · Sedang dikerjakan: {$inProgress}\n"
+            . "Hari ini: {$todayDue} · Lewat deadline: {$overdue}\n"
+            . "Diselesaikan hari ini: {$completedToday}\n\n"
 
             . "<b>Kuadran</b>\n"
-            . "🔴 Q1 Do Now: {$q1}\n"
-            . "🟡 Q2 Schedule: {$q2}\n"
-            . "🟠 Q3 Delegate: {$q3}\n"
-            . "⚪ Q4 Eliminate: {$q4}\n\n"
-
-            . "<b>Prioritas</b>\n"
-            . "🔴 High: {$high} · 🟡 Medium: {$medium} · 🟢 Low: {$low}";
+            . "Q1 Do Now (penting &amp; mendesak): {$q1}\n"
+            . "Q2 Schedule (penting): {$q2}\n"
+            . "Q3 Delegate (mendesak): {$q3}\n"
+            . "Q4 Eliminate (lainnya): {$q4}";
 
         if ($overdue > 0) {
-            $message .= "\n\n⚠ {$overdue} tugas overdue → /mendesak";
+            $message .= "\n\n<i>Ada {$overdue} tugas lewat deadline — /mendesak untuk detail</i>";
         }
 
         $this->telegram->sendMessage($chatId, $message);
@@ -501,7 +507,7 @@ class TelegramBotService
         Cache::forget("telegram_session:{$chatId}");
         Cache::forget("telegram_tasks:{$chatId}");
 
-        $this->telegram->sendMessage($chatId, "Sesi baru dimulai. Ketik pesan untuk chat dengan AI.");
+        $this->telegram->sendMessage($chatId, "<b>Sesi chat baru</b>\n\nRiwayat percakapan sebelumnya dihapus. Kirim pesan apa saja untuk mulai chat dengan AI.");
     }
 
     // =========================================================================
@@ -562,7 +568,7 @@ class TelegramBotService
         $result = $this->ai->chat($text, $user->id, $sessionId);
 
         if (!$result['success']) {
-            $this->telegram->sendMessage($chatId, "❌ " . ($result['error'] ?? 'Terjadi kesalahan saat memproses pesan.'));
+            $this->telegram->sendMessage($chatId, "<b>Gagal memproses pesan</b>\n" . ($result['error'] ?? 'Coba kirim ulang sebentar lagi.'));
             return;
         }
 
@@ -584,7 +590,7 @@ class TelegramBotService
 
                 $keyboard = [
                     [
-                        ['text' => '✅ Simpan Tugas', 'callback_data' => 'confirm_tasks'],
+                        ['text' => 'Simpan Tugas', 'callback_data' => 'confirm_tasks'],
                         ['text' => 'Batal', 'callback_data' => 'cancel_tasks'],
                     ],
                 ];
@@ -593,7 +599,7 @@ class TelegramBotService
             } else {
                 $keyboard = [
                     [
-                        ['text' => '✅ Simpan Tugas', 'callback_data' => 'confirm_tasks'],
+                        ['text' => 'Simpan Tugas', 'callback_data' => 'confirm_tasks'],
                         ['text' => 'Batal', 'callback_data' => 'cancel_tasks'],
                     ],
                 ];
@@ -692,17 +698,19 @@ class TelegramBotService
 
         if ($result['success']) {
             $count = $result['count'];
-            $msg = "✅ <b>{$count} tugas disimpan</b>\n\n";
+            $msg = "<b>{$count} tugas berhasil disimpan</b>\n\n";
 
             foreach ($result['created'] as $i => $todo) {
                 $due = $todo->due_date ? " — {$todo->due_date->format('d/m/Y')}" : '';
                 $msg .= ($i + 1) . ". {$todo->title}{$due}\n";
             }
 
+            $msg .= "\n<i>Lihat daftar lengkap: /tugas</i>";
+
             // Edit original message to remove buttons
             $this->telegram->editMessageText($chatId, $messageId, $msg);
         } else {
-            $errorMsg = "❌ Gagal menyimpan tugas.\n";
+            $errorMsg = "<b>Gagal menyimpan tugas</b>\n";
             if (!empty($result['errors'])) {
                 $errorMsg .= implode("\n", $result['errors']);
             }
@@ -824,62 +832,47 @@ class TelegramBotService
     }
 
     /**
-     * Get priority emoji for a todo.
-     */
-    protected function priorityEmoji(Todo $todo): string
-    {
-        return match ($todo->kuadran) {
-            1 => '🔴',
-            2 => '🟡',
-            3 => '🟠',
-            4 => '⚪',
-            default => '📋',
-        };
-    }
-
-    /**
      * Build a task preview message from AI-suggested tasks.
      */
     protected function buildTaskPreviewMessage(array $tasks): string
     {
         $count = count($tasks);
-        $msg = "📝 <b>Preview Tugas</b> ({$count})\n\n";
+        $msg = "<b>Usulan Tugas</b> ({$count})\n"
+            . "<i>Periksa dulu sebelum disimpan</i>\n\n";
 
         foreach ($tasks as $i => $task) {
-            $priority = match ($task['priority'] ?? 'medium') {
-                'high'   => '🔴',
-                'medium' => '🟡',
-                'low'    => '🟢',
-                default  => '🟡',
-            };
-
             $title = htmlspecialchars($task['title'] ?? 'Tanpa judul', ENT_NOQUOTES, 'UTF-8');
-            $msg  .= "<b>" . ($i + 1) . ". {$title}</b>\n";
+            $kuadran = $task['kuadran'] ?? 2;
+            $msg  .= "<b>[Q{$kuadran}]</b> " . ($i + 1) . ". <b>{$title}</b>\n";
 
             if (!empty($task['description'])) {
-                $desc = htmlspecialchars(mb_substr($task['description'], 0, 80), ENT_NOQUOTES, 'UTF-8');
-                $msg .= "   <i>{$desc}</i>\n";
+                $desc = htmlspecialchars(mb_substr($task['description'], 0, 120), ENT_NOQUOTES, 'UTF-8');
+                $msg .= "     <i>{$desc}</i>\n";
             }
 
-            // Meta line: hanya tampilkan komponen yang ada (hindari "- · 🟡 · Q2")
             $meta = [];
             if (!empty($task['due_date'])) {
                 $dateStr = $task['due_date'];
                 if (!empty($task['due_time'])) {
-                    $dateStr .= ' ' . $task['due_time'];
+                    $dateStr .= ' pukul ' . $task['due_time'];
                 }
-                $meta[] = "📅 {$dateStr}";
+                $meta[] = "deadline {$dateStr}";
             }
-            $meta[] = $priority;
-            $meta[] = 'Q' . ($task['kuadran'] ?? 2);
+
+            $priorityLabel = match ($task['priority'] ?? 'medium') {
+                'high'   => 'prioritas tinggi',
+                'low'    => 'prioritas rendah',
+                default  => 'prioritas sedang',
+            };
+            $meta[] = $priorityLabel;
 
             if (!empty($task['reminder_minutes'])) {
                 $rm = (int) $task['reminder_minutes'];
-                $rmLabel = $rm >= 60 ? round($rm / 60) . ' jam' : $rm . ' mnt';
-                $meta[] = "⏰ {$rmLabel}";
+                $rmLabel = $rm >= 60 ? 'ingatkan ' . round($rm / 60) . ' jam sebelum' : "ingatkan {$rm} menit sebelum";
+                $meta[] = $rmLabel;
             }
 
-            $msg .= '   ' . implode(' · ', $meta) . "\n\n";
+            $msg .= '     ' . implode(' · ', $meta) . "\n\n";
         }
 
         return trim($msg);

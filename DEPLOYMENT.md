@@ -73,7 +73,7 @@ sudo chmod -R 775 /var/www/todos/bootstrap/cache
 composer install --no-dev --optimize-autoloader
 
 # Node dependencies
-npm install
+npm ci
 npm run build
 ```
 
@@ -195,7 +195,7 @@ sudo ufw enable
 cd /var/www/todos
 git pull origin main
 composer install --no-dev --optimize-autoloader
-npm install
+npm ci
 npm run build
 php artisan migrate --force
 php artisan config:cache
