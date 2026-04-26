@@ -32,22 +32,24 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-### 2. Get OpenRouter API Key (FREE!)
+### 2. Get Gemini API Key (FREE tier)
 
-1. Go to https://openrouter.ai/
-2. Sign up with your email
-3. Verify your email
-4. Go to Settings → Keys
-5. Create a new API key
-6. Copy the key
+1. Go to https://aistudio.google.com/apikey
+2. Sign in dengan akun Google
+3. Klik "Create API Key"
+4. Copy API key yang dihasilkan
 
 ### 3. Configure .env
 
-Open `.env` and add your API key:
+Open `.env` dan isi config Gemini:
 
 ```env
-OPENROUTER_API_KEY=sk-or-v1-your-api-key-here
+GEMINI_API_KEY=your-gemini-api-key-here
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MAX_TOKENS=2000
 ```
+
+Sekalian juga config database MySQL dan Google OAuth (lihat [.env.example](.env.example) untuk daftar lengkap env var).
 
 ### 4. Install Dependencies
 
@@ -62,7 +64,7 @@ npm install
 ### 5. Setup Database
 
 ```bash
-# Run migrations (creates SQLite database automatically)
+# Pastikan database MySQL sudah dibuat (lihat langkah di bawah), lalu:
 php artisan migrate
 ```
 
@@ -169,12 +171,12 @@ php artisan cache:clear
 php artisan config:clear
 ```
 
-### Issue: OpenRouter API not working
+### Issue: Gemini API not working
 
-1. Check your API key in `.env`
-2. Make sure you verified your email on OpenRouter
-3. Check if you have credits (free tier should work)
-4. Test API key at: https://openrouter.ai/playground
+1. Check `GEMINI_API_KEY` di `.env` sudah benar
+2. Pastikan API key aktif di https://aistudio.google.com/apikey
+3. Jalankan `php artisan config:clear` setelah mengganti `.env`
+4. Cek log di `storage/logs/laravel.log` untuk error detail (rate limit 429, dll)
 
 ## Configuration Options
 
@@ -183,27 +185,26 @@ php artisan config:clear
 Edit `.env`:
 
 ```env
-# Use different model
-OPENROUTER_MODEL=anthropic/claude-3.5-sonnet
+# Model cepat & murah (default)
+GEMINI_MODEL=gemini-2.5-flash
 
-# Keep default (free)
-OPENROUTER_MODEL=deepseek/deepseek-r1
+# Model lebih powerful (untuk reasoning kompleks)
+GEMINI_MODEL=gemini-2.5-pro
 ```
 
-### Change Database
+### Database
 
-By default uses SQLite. To use MySQL/PostgreSQL:
+Project pakai **MySQL** (config ada di `.env.example`). Sebelum migrate, buat database-nya:
 
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=todos
-DB_USERNAME=root
-DB_PASSWORD=your_password
+```bash
+# Jalankan helper script (pakai credential default: root / no password / db=todos_ai)
+php create-database.php
+
+# Atau manual:
+mysql -u root -e "CREATE DATABASE todos_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-Then run:
+Lalu:
 
 ```bash
 php artisan migrate
@@ -230,12 +231,13 @@ tail -f storage/logs/laravel.log
 
 ### Database GUI
 
-Use tools to inspect SQLite database:
-- **DB Browser for SQLite** (recommended)
-- **phpLiteAdmin**
-- VS Code extension: "SQLite"
+Tools untuk inspect MySQL:
+- **MySQL Workbench** (official)
+- **phpMyAdmin** / **Adminer**
+- **DBeaver** (multi-db)
+- VS Code extension: "MySQL" by Jun Han
 
-Database location: `database/database.sqlite`
+Koneksi default: `127.0.0.1:3306`, database `todos_ai`, user `root`.
 
 ## Next Steps
 
@@ -255,4 +257,4 @@ Database location: `database/database.sqlite`
 
 **Happy task managing! 🎉**
 
-Remember: This uses FREE AI (DeepSeek R1), so enjoy unlimited AI assistance without breaking the bank! 💰✨
+Untuk konvensi arsitektur (FormRequest, Policy, OwnedByUser, ApiResponse, caching), lihat [ARCHITECTURE.md](ARCHITECTURE.md).

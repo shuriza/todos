@@ -32,8 +32,8 @@ sudo apt update && sudo apt upgrade -y
 
 # Install required packages
 sudo apt install -y nginx php8.2-fpm php8.2-cli php8.2-mbstring \
-  php8.2-xml php8.2-curl php8.2-sqlite3 php8.2-zip \
-  git curl unzip
+  php8.2-xml php8.2-curl php8.2-mysql php8.2-zip php8.2-gd \
+  php8.2-bcmath php8.2-intl mysql-server git curl unzip
 ```
 
 ### Step 2: Install Composer
@@ -96,17 +96,34 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://yourdomain.com
 
-OPENROUTER_API_KEY=your-api-key-here
+# Gemini AI
+GEMINI_API_KEY=your-gemini-api-key-here
+GEMINI_MODEL=gemini-2.5-flash
 
-# Database (SQLite is fine for production)
-DB_CONNECTION=sqlite
+# Google OAuth
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+
+# Telegram Bot
+TELEGRAM_BOT_TOKEN=your-bot-token
+TELEGRAM_WEBHOOK_SECRET=  # Generate: php -r "echo bin2hex(random_bytes(32));"
+
+# Database (MySQL)
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=todos_ai
+DB_USERNAME=todos_user
+DB_PASSWORD=your-strong-password
 ```
 
 ### Step 7: Database Setup
 
 ```bash
-# Create database file
-touch database/database.sqlite
+# Buat database & user MySQL
+sudo mysql -e "CREATE DATABASE todos_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mysql -e "CREATE USER 'todos_user'@'localhost' IDENTIFIED BY 'your-strong-password';"
+sudo mysql -e "GRANT ALL PRIVILEGES ON todos_ai.* TO 'todos_user'@'localhost'; FLUSH PRIVILEGES;"
 
 # Run migrations
 php artisan migrate --force
@@ -116,6 +133,8 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
+
+**Tip**: Script `deploy/setup-server.sh` sudah mengotomasi langkah 1-7 di atas — jalankan itu saja untuk fresh server.
 
 ### Step 8: Configure Nginx
 
@@ -221,8 +240,9 @@ DATE=$(date +%Y%m%d_%H%M%S)
 
 mkdir -p $BACKUP_DIR
 
-# Backup database
-cp /var/www/todos/database/database.sqlite $BACKUP_DIR/db_$DATE.sqlite
+# Backup database (MySQL dump)
+mysqldump -u todos_user -p"your-strong-password" todos_ai \
+  | gzip > $BACKUP_DIR/db_$DATE.sql.gz
 
 # Backup .env
 cp /var/www/todos/.env $BACKUP_DIR/env_$DATE
@@ -358,7 +378,7 @@ Wait 10-60 minutes for DNS propagation.
 - **VPS**: $5/month (Hetzner, Vultr)
 - **Domain**: $10/year
 - **SSL**: FREE (Let's Encrypt)
-- **OpenRouter**: FREE (DeepSeek R1)
+- **Gemini API**: FREE tier (AI Studio)
 - **Total**: **~$6/month**
 
 ### Recommended Setup
@@ -366,7 +386,7 @@ Wait 10-60 minutes for DNS propagation.
 - **Domain**: $10/year
 - **Backups**: $1/month (DigitalOcean backups)
 - **SSL**: FREE
-- **OpenRouter**: FREE
+- **Gemini API**: FREE tier
 - **Total**: **~$13/month**
 
 Still cheaper than Notion AI Plus! 😎
@@ -430,12 +450,18 @@ sudo systemctl restart nginx
 sudo systemctl status nginx
 ```
 
-### Database Locked
+### Database Connection Error
 
 ```bash
-# Check permissions
-sudo chown www-data:www-data /var/www/todos/database/database.sqlite
-sudo chmod 664 /var/www/todos/database/database.sqlite
+# Pastikan MySQL service jalan
+sudo systemctl status mysql
+sudo systemctl restart mysql
+
+# Test koneksi dengan credential di .env
+mysql -u todos_user -p todos_ai -e "SHOW TABLES;"
+
+# Cek log MySQL
+sudo tail -f /var/log/mysql/error.log
 ```
 
 ## Support

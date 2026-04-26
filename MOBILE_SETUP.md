@@ -188,7 +188,7 @@ FIREBASE_APP_ID=your-app-id
 ## Cost Optimization
 
 - Use Firebase free tier (Spark Plan)
-- OpenRouter DeepSeek R1 is FREE
+- Gemini API (free tier via AI Studio)
 - Laravel hosting on cheap VPS ($5/month)
 - Total cost: **~$5/month** 🎉
 
