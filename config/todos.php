@@ -52,11 +52,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | Jumlah hari dari sekarang untuk menganggap tugas "mendesak".
+    | Sesuai Tabel 3.1 proposal: < 24 Jam (1 hari) = High Urgency.
     | Dipakai oleh Todo::hitungKuadran().
     |
     */
 
-    'urgency_days' => env('TODOS_URGENCY_DAYS', 3),
+    'urgency_days' => env('TODOS_URGENCY_DAYS', 1),
 
     /*
     |--------------------------------------------------------------------------

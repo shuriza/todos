@@ -253,10 +253,10 @@ class Todo extends Model
 
     /**
      * Hitung kuadran Eisenhower otomatis berdasarkan priority dan deadline.
-     * Algoritma:
-     * - Mendesak = deadline <= 3 hari
-     * - Penting = priority high/medium
-     * 
+     * Algoritma (sesuai Tabel 3.1 proposal TA):
+     * - Mendesak (High Urgency) = deadline <= config('todos.urgency_days') hari (default 1 = 24 jam)
+     * - Penting (High Importance) = priority high/medium
+     *
      * Kuadran 1 (DO NOW): Mendesak + Penting
      * Kuadran 2 (SCHEDULE): Tidak Mendesak + Penting
      * Kuadran 3 (DELEGATE): Mendesak + Tidak Penting
@@ -266,13 +266,14 @@ class Todo extends Model
     {
         $isUrgent = false;
         $isImportant = in_array($priority, ['high', 'medium']);
-        
+
         if ($dueDate) {
             $deadline = Carbon::parse($dueDate);
             $daysUntilDeadline = now()->diffInDays($deadline, false);
-            $isUrgent = $daysUntilDeadline <= 3; // 3 hari atau kurang = mendesak
+            $urgencyDays = (int) config('todos.urgency_days', 1);
+            $isUrgent = $daysUntilDeadline <= $urgencyDays;
         }
-        
+
         if ($isUrgent && $isImportant) return self::KUADRAN_DO_NOW;
         if (!$isUrgent && $isImportant) return self::KUADRAN_SCHEDULE;
         if ($isUrgent && !$isImportant) return self::KUADRAN_DELEGATE;
