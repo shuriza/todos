@@ -9,6 +9,8 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Models\Todo;
 use App\Services\AiAssistantService;
+use App\Services\ArchiveService;
+use App\Services\ReportService;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -246,5 +248,7 @@ class TodoController extends Controller
         cache()->forget("user:{$userId}:todo_stats:full");
         cache()->forget("user:{$userId}:home_dashboard");
         AiAssistantService::forgetTaskContextCache($userId);
+        ReportService::forgetReportCache($userId);
+        ArchiveService::forgetArchiveCache($userId);
     }
 }
