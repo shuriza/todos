@@ -74,21 +74,28 @@ class ReportService
             $total     = (int) ($row->total ?? 0);
             $completed = (int) ($row->completed ?? 0);
 
-            // Rata-rata waktu penyelesaian (jam)
-            $avgHours = Todo::where('user_id', $userId)
+            // Tingkat ketepatan waktu: % tugas selesai sebelum/tepat deadline
+            $onTimeRow = Todo::where('user_id', $userId)
                 ->where('status', 'completed')
                 ->whereNotNull('completed_at')
+                ->whereNotNull('due_date')
                 ->whereBetween('completed_at', [$start, $end])
-                ->selectRaw("AVG(TIMESTAMPDIFF(SECOND, created_at, completed_at) / 3600) AS avg_hours")
-                ->value('avg_hours');
+                ->selectRaw("
+                    COUNT(*) AS with_deadline,
+                    SUM(CASE WHEN DATE(completed_at) <= due_date THEN 1 ELSE 0 END) AS on_time
+                ")
+                ->first();
+
+            $withDeadline = (int) ($onTimeRow->with_deadline ?? 0);
+            $onTime = (int) ($onTimeRow->on_time ?? 0);
 
             return [
-                'total'                => $total,
-                'completed'            => $completed,
-                'pending'              => (int) ($row->pending ?? 0),
-                'overdue'              => (int) ($row->overdue ?? 0),
-                'completion_rate'      => $total > 0 ? round(($completed / $total) * 100, 1) : 0,
-                'avg_completion_hours' => $avgHours !== null ? round((float) $avgHours, 1) : null,
+                'total'           => $total,
+                'completed'       => $completed,
+                'pending'         => (int) ($row->pending ?? 0),
+                'overdue'         => (int) ($row->overdue ?? 0),
+                'completion_rate' => $total > 0 ? round(($completed / $total) * 100, 1) : 0,
+                'on_time_rate'    => $withDeadline > 0 ? round(($onTime / $withDeadline) * 100) : null,
             ];
         });
     }

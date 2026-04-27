@@ -70,20 +70,8 @@
                 <td class="value">{{ $overview['completion_rate'] }}%</td>
             </tr>
             <tr>
-                <td class="label">Rata-rata Waktu Selesai</td>
-                <td class="value">
-                    @if($overview['avg_completion_hours'] !== null)
-                        @if($overview['avg_completion_hours'] < 1)
-                            {{ round($overview['avg_completion_hours'] * 60) }} menit
-                        @elseif($overview['avg_completion_hours'] < 24)
-                            {{ round($overview['avg_completion_hours'], 1) }} jam
-                        @else
-                            {{ round($overview['avg_completion_hours'] / 24, 1) }} hari
-                        @endif
-                    @else
-                        -
-                    @endif
-                </td>
+                <td class="label">Tingkat Ketepatan Waktu</td>
+                <td class="value">{{ $overview['on_time_rate'] !== null ? $overview['on_time_rate'] . '%' : '-' }}</td>
             </tr>
             <tr>
                 <td class="label">Streak Saat Ini</td>

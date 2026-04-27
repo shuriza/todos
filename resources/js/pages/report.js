@@ -461,13 +461,6 @@ window.reportApp = function () {
         // HELPER FUNCTIONS
         // =====================================================================
 
-        formatAvgTime(hours) {
-            if (hours === null || hours === undefined) return '-';
-            if (hours < 1) return Math.round(hours * 60) + 'm';
-            if (hours < 24) return Math.round(hours * 10) / 10 + 'j';
-            return Math.round((hours / 24) * 10) / 10 + 'h';
-        },
-
         formatHours(hours) {
             if (hours < 1) return Math.round(hours * 60) + ' menit';
             if (hours < 24) return Math.round(hours * 10) / 10 + ' jam';

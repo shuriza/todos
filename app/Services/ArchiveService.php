@@ -104,7 +104,8 @@ class ArchiveService
                     COUNT(*) AS total,
                     SUM(CASE WHEN sumber = 'google_classroom' THEN 1 ELSE 0 END) AS from_classroom,
                     SUM(CASE WHEN sumber = 'manual' THEN 1 ELSE 0 END) AS from_manual,
-                    AVG(ABS(TIMESTAMPDIFF(SECOND, created_at, completed_at)) / 3600) AS avg_hours
+                    SUM(CASE WHEN due_date IS NOT NULL THEN 1 ELSE 0 END) AS with_deadline,
+                    SUM(CASE WHEN due_date IS NOT NULL AND DATE(completed_at) <= due_date THEN 1 ELSE 0 END) AS on_time
                 ")
                 ->first();
 
@@ -113,12 +114,15 @@ class ArchiveService
                 ->distinct('course_id')
                 ->count('course_id');
 
+            $withDeadline = (int) ($row->with_deadline ?? 0);
+            $onTime = (int) ($row->on_time ?? 0);
+
             return [
                 'total'          => (int) ($row->total ?? 0),
                 'from_classroom' => (int) ($row->from_classroom ?? 0),
                 'from_manual'    => (int) ($row->from_manual ?? 0),
                 'course_count'   => $courseCount,
-                'avg_hours'      => $row->avg_hours !== null ? round((float) $row->avg_hours, 1) : null,
+                'on_time_rate'   => $withDeadline > 0 ? round(($onTime / $withDeadline) * 100) : null,
             ];
         });
     }

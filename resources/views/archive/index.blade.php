@@ -136,7 +136,7 @@
                 </div>
             </div>
 
-            {{-- Rata-rata Waktu --}}
+            {{-- Tepat Waktu --}}
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -145,19 +145,9 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 font-medium">Rata-rata Waktu</p>
+                        <p class="text-xs text-gray-500 font-medium">Tepat Waktu</p>
                         <p class="text-2xl font-bold text-gray-900">
-                            @if ($summary['avg_hours'] !== null)
-                                @if ($summary['avg_hours'] < 1)
-                                    {{ round($summary['avg_hours'] * 60) }} menit
-                                @elseif ($summary['avg_hours'] < 24)
-                                    {{ round($summary['avg_hours'], 1) }} jam
-                                @else
-                                    {{ round($summary['avg_hours'] / 24, 1) }} hari
-                                @endif
-                            @else
-                                &mdash;
-                            @endif
+                            {{ $summary['on_time_rate'] !== null ? $summary['on_time_rate'] . '%' : '&mdash;' }}
                         </p>
                     </div>
                 </div>

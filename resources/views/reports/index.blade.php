@@ -72,15 +72,15 @@
                 </div>
             </div>
 
-            {{-- Rata-rata Waktu --}}
+            {{-- Tepat Waktu --}}
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
                         <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 font-medium">Rata-rata Waktu</p>
-                        <p class="text-2xl font-bold text-gray-900" x-text="formatAvgTime(data.overview.avg_completion_hours)">-</p>
+                        <p class="text-xs text-gray-500 font-medium">Tepat Waktu</p>
+                        <p class="text-2xl font-bold text-gray-900" x-text="data.overview.on_time_rate !== null ? data.overview.on_time_rate + '%' : '-'">-</p>
                     </div>
                 </div>
             </div>

@@ -42,8 +42,8 @@ class ReportSummarySheet implements FromArray, WithTitle, WithHeadings, WithStyl
         $source   = $data['source'];
         $streak   = $data['streak'];
 
-        $avgTime = $overview['avg_completion_hours'] !== null
-            ? $this->formatHours($overview['avg_completion_hours'])
+        $onTimeRate = $overview['on_time_rate'] !== null
+            ? $overview['on_time_rate'] . '%'
             : '-';
 
         return [
@@ -54,7 +54,7 @@ class ReportSummarySheet implements FromArray, WithTitle, WithHeadings, WithStyl
             ['Tugas Pending', $overview['pending']],
             ['Tugas Terlambat', $overview['overdue']],
             ['Tingkat Penyelesaian', $overview['completion_rate'] . '%'],
-            ['Rata-rata Waktu Selesai', $avgTime],
+            ['Tingkat Ketepatan Waktu', $onTimeRate],
             ['', ''],
 
             // Streak
@@ -90,16 +90,5 @@ class ReportSummarySheet implements FromArray, WithTitle, WithHeadings, WithStyl
         return [
             1 => ['font' => ['bold' => true, 'size' => 12]],
         ];
-    }
-
-    private function formatHours(float $hours): string
-    {
-        if ($hours < 1) {
-            return round($hours * 60) . ' menit';
-        }
-        if ($hours < 24) {
-            return round($hours, 1) . ' jam';
-        }
-        return round($hours / 24, 1) . ' hari';
     }
 }
