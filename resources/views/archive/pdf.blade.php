@@ -134,12 +134,20 @@
                     <tbody>
                         @foreach ($tasks as $i => $task)
                             @php
-                                $hours = $task->created_at && $task->completed_at
-                                    ? abs($task->created_at->diffInHours($task->completed_at))
+                                $minutes = $task->created_at && $task->completed_at
+                                    ? abs($task->created_at->diffInMinutes($task->completed_at))
                                     : null;
-                                $duration = $hours !== null
-                                    ? ($hours < 24 ? $hours . ' jam' : round($hours / 24, 1) . ' hari')
-                                    : '-';
+                                if ($minutes !== null) {
+                                    if ($minutes < 60) {
+                                        $duration = $minutes . ' menit';
+                                    } elseif ($minutes < 1440) {
+                                        $duration = round($minutes / 60, 1) . ' jam';
+                                    } else {
+                                        $duration = round($minutes / 1440, 1) . ' hari';
+                                    }
+                                } else {
+                                    $duration = '-';
+                                }
                                 $priorityBadge = [
                                     'high'   => ['badge-high', 'Tinggi'],
                                     'medium' => ['badge-medium', 'Sedang'],
