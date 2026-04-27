@@ -12,6 +12,7 @@ import './pages/todos';
 import './pages/calendar';
 import './pages/telegram';
 import './pages/ai-chat';
+import './pages/report';
 
 /**
  * Toast Notification Manager

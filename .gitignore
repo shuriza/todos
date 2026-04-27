@@ -58,3 +58,10 @@ yarn-error.log*
 
 # Testing
 /.phpunit.cache
+
+# IDE / AI assistant configs
+.claude/
+.continue/
+
+# Misc assets
+image/
