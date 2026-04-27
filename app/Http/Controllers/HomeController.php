@@ -13,6 +13,10 @@ class HomeController extends Controller
         $user = Auth::user();
         $userId = $user->id;
 
+        // Re-kalkulasi kuadran Eisenhower berdasarkan waktu saat ini.
+        // Tugas yang mendekati deadline otomatis naik ke kuadran yang lebih urgent.
+        Todo::refreshKuadranForUser($userId);
+
         // Stats: single aggregate query (dulu: 6 query terpisah)
         $stats = $this->computeStats($userId);
 

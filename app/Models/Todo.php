@@ -279,4 +279,37 @@ class Todo extends Model
         if ($isUrgent && !$isImportant) return self::KUADRAN_DELEGATE;
         return self::KUADRAN_ELIMINATE;
     }
+
+    /**
+     * Re-kalkulasi kuadran untuk semua tugas aktif milik user.
+     *
+     * Kuadran bersifat time-sensitive (urgency berubah seiring waktu mendekati deadline).
+     * Method ini memastikan kolom `kuadran` di DB selalu up-to-date.
+     *
+     * Dipanggil dari:
+     *   - HomeController::index() dan TodoController::index() (saat halaman dibuka)
+     *   - Artisan command `todos:recalculate-kuadran` (scheduled setiap jam)
+     *
+     * @return int Jumlah tugas yang kuadrannya berubah
+     */
+    public static function refreshKuadranForUser(int $userId): int
+    {
+        $todos = static::where('user_id', $userId)
+            ->where('status', '!=', 'completed')
+            ->whereNotNull('due_date')
+            ->get(['id', 'priority', 'due_date', 'kuadran']);
+
+        $updated = 0;
+
+        foreach ($todos as $todo) {
+            $newKuadran = static::hitungKuadran($todo->priority, $todo->due_date);
+
+            if ($newKuadran !== $todo->kuadran) {
+                $todo->updateQuietly(['kuadran' => $newKuadran]);
+                $updated++;
+            }
+        }
+
+        return $updated;
+    }
 }

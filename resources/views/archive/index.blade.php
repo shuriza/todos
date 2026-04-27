@@ -9,8 +9,8 @@
     <div class="p-4 lg:p-6">
 
         {{-- Filter Bar --}}
-        <form method="GET" action="{{ route('archive.index') }}" class="mb-6 bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
-            {{-- Periode --}}
+        <div class="mb-6 bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
+            {{-- Periode (link-based, bawa semua filter saat ini) --}}
             <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-sm font-medium text-gray-600">Periode:</span>
                 @foreach ([
@@ -21,17 +21,21 @@
                     '180d' => '6 Bulan',
                     '365d' => '1 Tahun',
                 ] as $value => $label)
-                    <button type="submit" name="period" value="{{ $value }}"
-                            class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                                   {{ $filters['period'] === $value
-                                        ? 'bg-indigo-600 text-white shadow-sm'
-                                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100' }}">
+                    <a href="{{ route('archive.index', array_merge(
+                            array_filter($filters, fn($v) => $v !== null && $v !== ''),
+                            ['period' => $value]
+                        )) }}"
+                       class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                              {{ $filters['period'] === $value
+                                   ? 'bg-indigo-600 text-white shadow-sm'
+                                   : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100' }}">
                         {{ $label }}
-                    </button>
+                    </a>
                 @endforeach
             </div>
 
             {{-- Search + Course Filter + Sort --}}
+            <form method="GET" action="{{ route('archive.index') }}">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                 <input type="hidden" name="period" value="{{ $filters['period'] }}">
 
@@ -68,7 +72,8 @@
                     </button>
                 </div>
             </div>
-        </form>
+            </form>
+        </div>
 
         {{-- Export Bar --}}
         <div class="flex items-center justify-between mb-4">

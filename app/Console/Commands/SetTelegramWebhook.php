@@ -43,6 +43,16 @@ class SetTelegramWebhook extends Command
 
     protected function setWebhook(TelegramService $telegram): int
     {
+        // Safety guard: di local env, tolak set webhook tanpa URL eksplisit.
+        // Ini mencegah tidak sengaja menimpa webhook production.
+        if (app()->environment('local') && !$this->argument('url')) {
+            $this->error('🚫 Menolak set webhook di environment local tanpa URL eksplisit.');
+            $this->warn('   Webhook Telegram hanya boleh 1 per bot — menjalankan ini akan mematikan bot production.');
+            $this->warn('   Jika memang perlu (misal via ngrok), jalankan:');
+            $this->warn('   php artisan telegram:set-webhook https://your-ngrok-url.ngrok.io/telegram/webhook');
+            return self::FAILURE;
+        }
+
         $url = $this->argument('url')
             ?? rtrim(config('app.url'), '/') . '/telegram/webhook';
 

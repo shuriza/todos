@@ -8,26 +8,38 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Notifikasi: kirim reminder deadline setiap 1 menit untuk presisi tinggi
-Schedule::command('notification:send-reminders --type=deadline')
-    ->everyMinute()
-    ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/reminders.log'));
+// Scheduled tasks hanya jalan di production.
+// Di local env, jalankan manual: php artisan notification:send-reminders --type=deadline
+// Ini mencegah notifikasi dobel saat production dan localhost jalan bersamaan.
+if (app()->environment('production')) {
+    // Notifikasi: kirim reminder deadline setiap 1 menit untuk presisi tinggi
+    Schedule::command('notification:send-reminders --type=deadline')
+        ->everyMinute()
+        ->withoutOverlapping()
+        ->appendOutputTo(storage_path('logs/reminders.log'));
 
-// Overdue check setiap 1 menit untuk presisi tinggi
-Schedule::command('notification:send-reminders --type=overdue')
-    ->everyMinute()
-    ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/reminders.log'));
+    // Overdue check setiap 1 menit untuk presisi tinggi
+    Schedule::command('notification:send-reminders --type=overdue')
+        ->everyMinute()
+        ->withoutOverlapping()
+        ->appendOutputTo(storage_path('logs/reminders.log'));
 
-// Daily summary setiap pagi jam 7
-Schedule::command('notification:send-reminders --type=daily')
-    ->dailyAt('07:00')
-    ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/reminders.log'));
+    // Daily summary setiap pagi jam 7
+    Schedule::command('notification:send-reminders --type=daily')
+        ->dailyAt('07:00')
+        ->withoutOverlapping()
+        ->appendOutputTo(storage_path('logs/reminders.log'));
 
-// Sync Google Classroom setiap 6 jam
-Schedule::command('classroom:sync')
-    ->everySixHours()
-    ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/classroom-sync.log'));
+    // Sync Google Classroom setiap 6 jam
+    Schedule::command('classroom:sync')
+        ->everySixHours()
+        ->withoutOverlapping()
+        ->appendOutputTo(storage_path('logs/classroom-sync.log'));
+
+    // Re-kalkulasi kuadran Eisenhower setiap jam.
+    // Tugas yang mendekati deadline otomatis naik ke kuadran lebih urgent.
+    Schedule::command('todos:recalculate-kuadran')
+        ->hourly()
+        ->withoutOverlapping()
+        ->appendOutputTo(storage_path('logs/kuadran-recalc.log'));
+}

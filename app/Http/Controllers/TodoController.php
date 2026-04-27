@@ -25,6 +25,9 @@ class TodoController extends Controller
     {
         $userId = Auth::id();
 
+        // Re-kalkulasi kuadran Eisenhower berdasarkan waktu saat ini.
+        Todo::refreshKuadranForUser($userId);
+
         $query = Todo::with(['categoryModel', 'course'])
             ->where('user_id', $userId)
             ->orderBy('order', 'asc')

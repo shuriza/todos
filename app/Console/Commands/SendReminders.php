@@ -201,12 +201,14 @@ class SendReminders extends Command
                   });
             })
             ->whereDoesntHave('notificationLogs', function ($q) use ($cooldownHours) {
-                // Cooldown pengulangan per-tugas
+                // Cooldown pengulangan per-tugas.
+                // Pattern harus match dengan pesan aktual di TelegramService:
+                //   - sendOverdueAlert():   "Tugas Lewat Deadline"
+                //   - sendOverdueSummary(): "Ringkasan Tugas Terlambat"
                 $q->telegram()
                     ->sent()
                     ->where(function ($q2) {
-                        $q2->where('pesan', 'LIKE', '%Tugas Overdue%')
-                           ->orWhere('pesan', 'LIKE', '%Melewati Deadline%')
+                        $q2->where('pesan', 'LIKE', '%Tugas Lewat Deadline%')
                            ->orWhere('pesan', 'LIKE', '%Ringkasan Tugas Terlambat%');
                     })
                     ->where('created_at', '>', now()->subHours($cooldownHours));

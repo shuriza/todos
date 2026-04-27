@@ -31,9 +31,14 @@ class GoogleAuthController extends Controller
      */
     public function redirect()
     {
+        // Di local env, gunakan 'select_account' agar tidak merevoke
+        // refresh token yang sedang dipakai production.
+        // 'consent' hanya diperlukan di production atau saat reconnect.
+        $prompt = app()->environment('local') ? 'select_account' : 'consent';
+
         return Socialite::driver('google')
             ->scopes(self::$classroomScopes)
-            ->with(['access_type' => 'offline', 'prompt' => 'consent'])
+            ->with(['access_type' => 'offline', 'prompt' => $prompt])
             ->redirect();
     }
 
@@ -116,16 +121,19 @@ class GoogleAuthController extends Controller
     /**
      * Reconnect Google account (for authenticated users).
      * Forces re-consent to ensure Classroom scopes are granted.
+     * Di local env, gunakan 'select_account' agar tidak merevoke token production.
      */
     public function reconnect()
     {
         session(['google_reconnect' => true]);
+
+        $prompt = app()->environment('local') ? 'select_account' : 'consent';
         
         return Socialite::driver('google')
             ->scopes(self::$classroomScopes)
             ->with([
                 'access_type' => 'offline',
-                'prompt' => 'consent',
+                'prompt' => $prompt,
                 'login_hint' => Auth::user()->email,
             ])
             ->redirect();
