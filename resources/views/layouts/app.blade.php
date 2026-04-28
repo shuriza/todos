@@ -115,12 +115,7 @@
                         @endif
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>
-                            <p class="text-xs text-indigo-200 truncate flex items-center gap-1.5">
-                                @if(Auth::user()->isDosen())
-                                    <span class="bg-amber-400 text-amber-900 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">Dosen</span>
-                                @endif
-                                {{ Auth::user()->nim ?? Auth::user()->email }}
-                            </p>
+                            <p class="text-xs text-indigo-200 truncate">{{ Auth::user()->nim ?? Auth::user()->email }}</p>
                         </div>
                         <form method="POST" action="{{ route('logout') }}" @click.stop>
                             @csrf

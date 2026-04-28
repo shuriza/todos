@@ -28,7 +28,6 @@ class User extends Authenticatable
         'avatar',
         'nim',
         'prodi',
-        'role',
         'telegram_chat_id',
         'notification_preferences',
     ];
@@ -105,16 +104,6 @@ class User extends Authenticatable
     public function aiSuggestions(): HasMany
     {
         return $this->hasMany(AiSuggestion::class);
-    }
-
-    public function isDosen(): bool
-    {
-        return $this->role === 'dosen';
-    }
-
-    public function isMahasiswa(): bool
-    {
-        return $this->role !== 'dosen';
     }
 
     /**

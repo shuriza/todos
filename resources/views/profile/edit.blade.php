@@ -26,11 +26,6 @@
                     <h3 class="text-xl font-bold text-gray-900">{{ $user->name }}</h3>
                     <p class="text-sm text-gray-500">{{ $user->email }}</p>
                     <div class="flex items-center gap-3 mt-2 flex-wrap">
-                        @if($user->isDosen())
-                            <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-lg font-bold uppercase tracking-wide">Dosen</span>
-                        @else
-                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-lg font-medium">Mahasiswa</span>
-                        @endif
                         @if($user->nim)
                             <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg font-medium">NIM: {{ $user->nim }}</span>
                         @endif
@@ -95,16 +90,6 @@
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             <x-input-error class="mt-1" :messages="$errors->get('prodi')" />
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Peran Akun</label>
-                        <select name="role" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                            <option value="mahasiswa" @selected(old('role', $user->role) === 'mahasiswa')>Mahasiswa</option>
-                            <option value="dosen" @selected(old('role', $user->role) === 'dosen')>Dosen</option>
-                        </select>
-                        <p class="text-xs text-gray-400 mt-1">Dideteksi otomatis saat login. Ubah jika deteksi keliru.</p>
-                        <x-input-error class="mt-1" :messages="$errors->get('role')" />
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-2">

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -84,18 +83,11 @@ class GoogleAuthController extends Controller
                 ]);
             }
             
-            // Auto-detect role: teacher if they own at least one Classroom course
-            $detectedRole = $this->detectRole($googleUser->token);
-            if ($user->role !== $detectedRole) {
-                $user->update(['role' => $detectedRole]);
-            }
-
             // Log the user in
             Auth::login($user, true);
 
             Log::info('Google login success', [
                 'user_id' => $user->id,
-                'role' => $detectedRole,
                 'has_classroom_access' => $hasClassroomAccess,
                 'has_refresh_token' => !empty($googleUser->refreshToken),
             ]);
@@ -144,31 +136,6 @@ class GoogleAuthController extends Controller
                 'login_hint' => Auth::user()->email,
             ])
             ->redirect();
-    }
-
-    /**
-     * Detect if the Google user is a teacher (has courses they teach).
-     * Uses teacherId=me filter — returns non-empty only for teachers.
-     */
-    private function detectRole(string $accessToken): string
-    {
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $accessToken,
-                'Accept' => 'application/json',
-            ])->get('https://classroom.googleapis.com/v1/courses', [
-                'teacherId' => 'me',
-                'pageSize' => 1,
-            ]);
-
-            if ($response->successful() && !empty($response->json('courses'))) {
-                return 'dosen';
-            }
-        } catch (\Exception $e) {
-            Log::warning('Role detection failed, defaulting to mahasiswa', ['error' => $e->getMessage()]);
-        }
-
-        return 'mahasiswa';
     }
 
     /**
