@@ -16,8 +16,12 @@
 
         {{-- Empty State: Quick Actions --}}
         <div class="flex-1 flex items-center justify-center px-4" x-show="messages.length === 0" x-cloak>
-            <div class="max-w-lg w-full">
-                <p class="text-center text-gray-500 text-sm mb-6">Pilih topik atau ketik langsung di bawah</p>
+            <div class="max-w-lg w-full text-center">
+                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">Hai, {{ Auth::user()->name }}!</h3>
+                <p class="text-sm text-gray-500 mb-6">Ada yang bisa saya bantu hari ini? Pilih topik atau ketik langsung di bawah.</p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <button @click="quickAction('daily-planning')" class="text-left px-4 py-3 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors">
