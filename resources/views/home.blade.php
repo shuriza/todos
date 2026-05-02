@@ -43,73 +43,81 @@
         {{-- Matriks 2x2 --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {{-- Q1 --}}
-            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div class="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-red-50">
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
+                <div class="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-red-50 flex-shrink-0">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
                         <span class="text-sm font-semibold text-gray-800">Q1 Lakukan Sekarang</span>
                     </div>
                     <span class="text-xs text-gray-500">{{ count($urgentImportant) }} tugas</span>
                 </div>
-                <div class="p-3 space-y-2 min-h-[100px] max-h-[280px] overflow-y-auto">
+                <div class="p-3 space-y-2 flex-1 overflow-y-auto" style="min-height: 200px; max-height: 300px;">
                     @forelse($urgentImportant as $task)
                         @include('components.task-card', ['task' => $task, 'color' => 'red'])
                     @empty
-                        <p class="text-sm text-gray-400 text-center py-6">Tidak ada tugas mendesak</p>
+                        <div class="flex items-center justify-center h-full">
+                            <p class="text-sm text-gray-400">Tidak ada tugas mendesak</p>
+                        </div>
                     @endforelse
                 </div>
             </div>
 
             {{-- Q2 --}}
-            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div class="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-blue-50">
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
+                <div class="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-blue-50 flex-shrink-0">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
                         <span class="text-sm font-semibold text-gray-800">Q2 Jadwalkan</span>
                     </div>
                     <span class="text-xs text-gray-500">{{ count($notUrgentImportant) }} tugas</span>
                 </div>
-                <div class="p-3 space-y-2 min-h-[100px] max-h-[280px] overflow-y-auto">
+                <div class="p-3 space-y-2 flex-1 overflow-y-auto" style="min-height: 200px; max-height: 300px;">
                     @forelse($notUrgentImportant as $task)
                         @include('components.task-card', ['task' => $task, 'color' => 'blue'])
                     @empty
-                        <p class="text-sm text-gray-400 text-center py-6">Tidak ada tugas terjadwal</p>
+                        <div class="flex items-center justify-center h-full">
+                            <p class="text-sm text-gray-400">Tidak ada tugas terjadwal</p>
+                        </div>
                     @endforelse
                 </div>
             </div>
 
             {{-- Q3 --}}
-            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div class="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-yellow-50">
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
+                <div class="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-yellow-50 flex-shrink-0">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
                         <span class="text-sm font-semibold text-gray-800">Q3 Delegasikan</span>
                     </div>
                     <span class="text-xs text-gray-500">{{ count($urgentNotImportant) }} tugas</span>
                 </div>
-                <div class="p-3 space-y-2 min-h-[100px] max-h-[280px] overflow-y-auto">
+                <div class="p-3 space-y-2 flex-1 overflow-y-auto" style="min-height: 200px; max-height: 300px;">
                     @forelse($urgentNotImportant as $task)
                         @include('components.task-card', ['task' => $task, 'color' => 'yellow'])
                     @empty
-                        <p class="text-sm text-gray-400 text-center py-6">Tidak ada tugas untuk didelegasikan</p>
+                        <div class="flex items-center justify-center h-full">
+                            <p class="text-sm text-gray-400">Tidak ada tugas untuk didelegasikan</p>
+                        </div>
                     @endforelse
                 </div>
             </div>
 
             {{-- Q4 --}}
-            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div class="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
+                <div class="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-gray-50 flex-shrink-0">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
                         <span class="text-sm font-semibold text-gray-800">Q4 Eliminasi</span>
                     </div>
                     <span class="text-xs text-gray-500">{{ count($notUrgentNotImportant ?? []) }} tugas</span>
                 </div>
-                <div class="p-3 space-y-2 min-h-[100px] max-h-[280px] overflow-y-auto">
+                <div class="p-3 space-y-2 flex-1 overflow-y-auto" style="min-height: 200px; max-height: 300px;">
                     @forelse($notUrgentNotImportant ?? [] as $task)
                         @include('components.task-card', ['task' => $task, 'color' => 'gray'])
                     @empty
-                        <p class="text-sm text-gray-400 text-center py-6">Tidak ada tugas di kuadran ini</p>
+                        <div class="flex items-center justify-center h-full">
+                            <p class="text-sm text-gray-400">Tidak ada tugas di kuadran ini</p>
+                        </div>
                     @endforelse
                 </div>
             </div>
