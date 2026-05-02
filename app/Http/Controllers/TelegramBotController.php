@@ -57,15 +57,20 @@ class TelegramBotController extends Controller
             'has_callback' => isset($update['callback_query']),
         ]);
 
-        // Register processing to run AFTER the 200 response is sent to Telegram.
-        // This means Telegram gets the 200 instantly and stops waiting,
-        // dramatically reducing perceived latency for callbacks and commands.
+        // Di local env (artisan serve), terminating callback tidak selalu fire.
+        // Proses langsung secara sinkron agar bot tetap respond saat development.
+        if (app()->environment('local', 'testing')) {
+            $this->botService->handleUpdate($update);
+            return response()->json(['ok' => true]);
+        }
+
+        // Di production: proses SETELAH response 200 dikirim ke Telegram.
+        // Telegram berhenti menunggu langsung, mengurangi perceived latency.
         $botService = $this->botService;
         app()->terminating(function () use ($botService, $update) {
             $botService->handleUpdate($update);
         });
 
-        // Return 200 immediately — Telegram stops waiting right away
         return response()->json(['ok' => true]);
     }
 }

@@ -24,9 +24,10 @@ if (app()->environment('production')) {
         ->withoutOverlapping()
         ->appendOutputTo(storage_path('logs/reminders.log'));
 
-    // Daily summary setiap pagi jam 7
+    // Daily summary: jalan tiap menit, tapi hanya kirim jika waktu cocok
+    // dengan preferensi user (daily_summary_time, default 07:00, window ±30 menit)
     Schedule::command('notification:send-reminders --type=daily')
-        ->dailyAt('07:00')
+        ->everyMinute()
         ->withoutOverlapping()
         ->appendOutputTo(storage_path('logs/reminders.log'));
 

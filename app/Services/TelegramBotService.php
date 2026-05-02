@@ -19,6 +19,19 @@ class TelegramBotService
     }
 
     // =========================================================================
+    // Helpers
+    // =========================================================================
+
+    /**
+     * Escape string untuk Telegram HTML parse mode.
+     * Mencegah user input (title, name) merusak formatting pesan.
+     */
+    private function esc(string $text): string
+    {
+        return htmlspecialchars($text, ENT_NOQUOTES, 'UTF-8');
+    }
+
+    // =========================================================================
     // Main Entry Point
     // =========================================================================
 
@@ -116,7 +129,7 @@ class TelegramBotService
             return;
         }
 
-        $name = $user->name;
+        $name = $this->esc($user->name);
 
         $message = "Halo <b>{$name}</b>.\n\n"
             . "Ini <b>Asisten Tugas Polinema</b>. Saya bisa bantu:\n"
@@ -215,9 +228,10 @@ class TelegramBotService
             . "<i>Diurutkan berdasarkan kuadran &amp; deadline</i>\n\n";
 
         foreach ($todos as $i => $todo) {
+            $title = $this->esc($todo->title);
             $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : 'tanpa deadline';
             $progress = $todo->status === 'in_progress' ? ' · <i>dikerjakan</i>' : '';
-            $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$todo->title}\n"
+            $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$title}\n"
                 . "     {$due}{$progress}\n";
         }
 
@@ -255,12 +269,13 @@ class TelegramBotService
             . now()->translatedFormat('l, d F Y') . "\n\n";
 
         foreach ($todos as $i => $todo) {
-            $timeStr = $todo->due_time ? " · pukul {$todo->due_time}" : '';
+            $title = $this->esc($todo->title);
+            $timeStr = $todo->due_time ? ' · pukul ' . \Carbon\Carbon::parse($todo->due_time)->format('H:i') : '';
             $progress = $todo->status === 'in_progress' ? ' · <i>dikerjakan</i>' : '';
-            $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$todo->title}{$timeStr}{$progress}\n";
+            $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$title}{$timeStr}{$progress}\n";
 
             if ($todo->course) {
-                $message .= "     <i>dari {$todo->course->nama_course}</i>\n";
+                $message .= "     <i>dari {$this->esc($todo->course->nama_course)}</i>\n";
             }
         }
 
@@ -302,10 +317,11 @@ class TelegramBotService
         if ($overdue->isNotEmpty()) {
             $message .= "<b>Lewat Deadline</b> ({$overdue->count()})\n";
             foreach ($overdue->take(5) as $i => $todo) {
+                $title = $this->esc($todo->title);
                 $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : '-';
                 $daysLate = $todo->due_date ? now()->startOfDay()->diffInDays($todo->due_date->startOfDay()) : 0;
                 $lateStr = $daysLate > 0 ? " ({$daysLate} hari lalu)" : '';
-                $message .= ($i + 1) . ". {$todo->title}\n"
+                $message .= ($i + 1) . ". {$title}\n"
                     . "     Deadline: {$due}{$lateStr}\n";
             }
             if ($overdue->count() > 5) {
@@ -317,8 +333,9 @@ class TelegramBotService
         if ($todos->isNotEmpty()) {
             $message .= "<b>Q1 Lakukan Sekarang</b> ({$todos->count()})\n";
             foreach ($todos as $i => $todo) {
+                $title = $this->esc($todo->title);
                 $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : 'tanpa deadline';
-                $message .= ($i + 1) . ". {$todo->title} — {$due}\n";
+                $message .= ($i + 1) . ". {$title} - {$due}\n";
             }
         }
 
@@ -441,9 +458,10 @@ class TelegramBotService
 
         foreach ($todos->values() as $i => $todo) {
             $num = ($page * $perPage) + $i + 1;
+            $title = $this->esc($todo->title);
             $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : '-';
-            $overdue = ($todo->due_date && $todo->due_date->isPast()) ? ' (Overdue)' : '';
-            $message .= "{$num}. {$todo->title}\n"
+            $overdue = ($todo->deadline && $todo->deadline->isPast()) ? ' (Terlambat)' : '';
+            $message .= "{$num}. {$title}\n"
                 . "    Deadline: {$due}{$overdue}\n";
         }
 
@@ -704,8 +722,9 @@ class TelegramBotService
             $msg = "<b>{$count} tugas berhasil disimpan</b>\n\n";
 
             foreach ($result['created'] as $i => $todo) {
-                $due = $todo->due_date ? " — {$todo->due_date->format('d/m/Y')}" : '';
-                $msg .= ($i + 1) . ". {$todo->title}{$due}\n";
+                $title = $this->esc($todo->title);
+                $due = $todo->due_date ? " - {$todo->due_date->format('d/m/Y')}" : '';
+                $msg .= ($i + 1) . ". {$title}{$due}\n";
             }
 
             $msg .= "\n<i>Lihat daftar lengkap: /tugas</i>";
@@ -761,9 +780,10 @@ class TelegramBotService
 
         // Update the message to show completion
         $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : '-';
+        $title = $this->esc($todo->title);
         $completedMsg = "<b>Tugas Diselesaikan</b>\n"
             . "────────────────────\n"
-            . "<s>{$todo->title}</s>\n"
+            . "<s>{$title}</s>\n"
             . "Deadline: {$due}\n"
             . "Selesai: " . now()->translatedFormat('d M Y, H:i');
 
@@ -822,9 +842,10 @@ class TelegramBotService
 
         // Update the message to show reverted state
         $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : '-';
+        $title = $this->esc($todo->title);
         $revertedMsg = "<b>Tugas Dikembalikan ke Aktif</b>\n"
             . "────────────────────\n"
-            . "<b>{$todo->title}</b>\n"
+            . "<b>{$title}</b>\n"
             . "Deadline: {$due}\n"
             . "Kuadran: Q{$todo->kuadran}\n\n"
             . "<i>Tugas kembali ke daftar aktif.</i>";

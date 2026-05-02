@@ -275,13 +275,31 @@ class TelegramService
 
         $result = $this->sendMessage($user->telegram_chat_id, $message);
 
+        $status = $result['ok'] ? 'sent' : 'failed';
+        $waktuKirim = $result['ok'] ? now() : null;
+
+        // Buat log per-todo agar cooldown di SendReminders bisa match per-tugas.
+        // Tanpa ini, cooldown whereDoesntHave('notificationLogs') tidak akan
+        // menemukan log untuk masing-masing todo (karena todo_id = null).
+        foreach ($todos as $todo) {
+            NotificationLog::create([
+                'user_id' => $user->id,
+                'todo_id' => $todo->id,
+                'tipe_notifikasi' => 'telegram',
+                'status_kirim' => $status,
+                'pesan' => $message,
+                'waktu_kirim' => $waktuKirim,
+            ]);
+        }
+
+        // Return log tanpa todo_id sebagai summary record
         return NotificationLog::create([
             'user_id' => $user->id,
             'todo_id' => null,
             'tipe_notifikasi' => 'telegram',
-            'status_kirim' => $result['ok'] ? 'sent' : 'failed',
+            'status_kirim' => $status,
             'pesan' => $message,
-            'waktu_kirim' => $result['ok'] ? now() : null,
+            'waktu_kirim' => $waktuKirim,
         ]);
     }
 
