@@ -183,12 +183,12 @@ window.chatBot = function () {
 
         kuadranLabel(k) {
             const labels = {
-                1: 'Q1 — Do Now',
-                2: 'Q2 — Schedule',
-                3: 'Q3 — Delegate',
-                4: 'Q4 — Eliminate',
+                1: 'Q1 Lakukan Sekarang',
+                2: 'Q2 Jadwalkan',
+                3: 'Q3 Delegasikan',
+                4: 'Q4 Eliminasi',
             };
-            return labels[k] || 'Q2 — Schedule';
+            return labels[k] || 'Q2 Jadwalkan';
         },
 
         categoryLabel(cat) {

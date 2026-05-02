@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div>
             <h2 class="text-xl font-bold text-gray-800">Arsip Tugas</h2>
-            <p class="text-sm text-gray-500">Riwayat tugas yang sudah kamu selesaikan — bukti portofolio akademik</p>
+            <p class="text-sm text-gray-500">Riwayat tugas yang sudah kamu selesaikan sebagai bukti portofolio akademik</p>
         </div>
     </x-slot>
 

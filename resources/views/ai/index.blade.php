@@ -101,7 +101,7 @@
                             {{-- Task Preview Cards --}}
                             <template x-if="msg.tasks_preview && msg.tasks_preview.length > 0">
                                 <div class="mt-3 space-y-2 border-t border-gray-100 pt-3">
-                                    <p class="text-xs font-medium text-gray-500">Preview tugas — cek sebelum ditambahkan:</p>
+                                    <p class="text-xs font-medium text-gray-500">Preview tugas, cek sebelum ditambahkan:</p>
                                     <template x-for="(task, ti) in msg.tasks_preview" :key="ti">
                                         <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 relative group">
                                             <button @click="removePreviewTask(msg.id, ti)" class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-red-100 text-red-500 hover:bg-red-200 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs">&times;</button>

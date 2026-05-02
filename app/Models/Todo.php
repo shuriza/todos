@@ -21,10 +21,10 @@ class Todo extends Model
     const KUADRAN_ELIMINATE = 4;   // Tidak Mendesak & Tidak Penting
 
     const KUADRAN_LABELS = [
-        1 => 'DO NOW - Mendesak & Penting',
-        2 => 'SCHEDULE - Tidak Mendesak & Penting',
-        3 => 'DELEGATE - Mendesak & Tidak Penting',
-        4 => 'ELIMINATE - Tidak Mendesak & Tidak Penting',
+        1 => 'Lakukan Sekarang',
+        2 => 'Jadwalkan',
+        3 => 'Delegasikan',
+        4 => 'Eliminasi',
     ];
 
     protected $fillable = [

@@ -163,14 +163,14 @@ class TelegramBotService
         $message = "<b>Panduan Bot</b>\n\n"
 
             . "<b>Perintah</b>\n"
-            . "/start — Menu utama\n"
-            . "/tugas — Daftar tugas aktif\n"
-            . "/hari_ini — Deadline hari ini\n"
-            . "/mendesak — Tugas penting &amp; overdue\n"
-            . "/selesai — Tandai tugas selesai\n"
-            . "/statistik — Ringkasan angka\n"
-            . "/planning — Saran urutan kerja dari AI\n"
-            . "/baru — Mulai sesi chat baru\n\n"
+            . "/start : Menu utama\n"
+            . "/tugas : Daftar tugas aktif\n"
+            . "/hari_ini : Deadline hari ini\n"
+            . "/mendesak : Tugas penting &amp; overdue\n"
+            . "/selesai : Tandai tugas selesai\n"
+            . "/statistik : Ringkasan angka\n"
+            . "/planning : Saran urutan kerja dari AI\n"
+            . "/baru : Mulai sesi chat baru\n\n"
 
             . "<b>Chat dengan AI</b>\n"
             . "Ketik pesan apa saja untuk bertanya atau membuat tugas. Contoh:\n"
@@ -178,11 +178,11 @@ class TelegramBotService
             . "<i>• Buat tugas belajar algoritma besok jam 10</i>\n"
             . "<i>• Bantu breakdown skripsi jadi beberapa tugas kecil</i>\n\n"
 
-            . "<b>Tentang Kuadran (Q1–Q4)</b>\n"
-            . "Q1 — <b>Do Now</b>: penting &amp; mendesak\n"
-            . "Q2 — <b>Schedule</b>: penting tapi belum mendesak\n"
-            . "Q3 — <b>Delegate</b>: mendesak tapi kurang penting\n"
-            . "Q4 — <b>Eliminate</b>: tidak penting &amp; tidak mendesak\n\n"
+            . "<b>Tentang Kuadran (Q1-Q4)</b>\n"
+            . "Q1 <b>Lakukan Sekarang</b>: penting &amp; mendesak\n"
+            . "Q2 <b>Jadwalkan</b>: penting tapi belum mendesak\n"
+            . "Q3 <b>Delegasikan</b>: mendesak tapi kurang penting\n"
+            . "Q4 <b>Eliminasi</b>: tidak penting &amp; tidak mendesak\n\n"
             . "<i>Kuadran otomatis ditentukan dari deadline &amp; prioritas tugas.</i>";
 
         $this->telegram->sendMessage($chatId, $message);
@@ -315,7 +315,7 @@ class TelegramBotService
         }
 
         if ($todos->isNotEmpty()) {
-            $message .= "<b>Kuadran 1 — Do Now</b> ({$todos->count()})\n";
+            $message .= "<b>Q1 Lakukan Sekarang</b> ({$todos->count()})\n";
             foreach ($todos as $i => $todo) {
                 $due = $todo->due_date ? $todo->due_date->format('d/m/Y') : 'tanpa deadline';
                 $message .= ($i + 1) . ". {$todo->title} — {$due}\n";

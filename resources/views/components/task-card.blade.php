@@ -60,22 +60,22 @@
                 <div class="px-3 py-1.5 text-xs text-gray-400 font-medium uppercase tracking-wider">Pindah ke</div>
                 @if(($task->kuadran ?? 0) !== 1)
                     <button @click="moveToKuadran({{ $task->id }}, 1); menuOpen = false" class="w-full text-left px-3 py-2 text-sm hover:bg-red-50 text-gray-700 flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Q1 — Do Now
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Q1 Lakukan Sekarang
                     </button>
                 @endif
                 @if(($task->kuadran ?? 0) !== 2)
                     <button @click="moveToKuadran({{ $task->id }}, 2); menuOpen = false" class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 text-gray-700 flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Q2 — Schedule
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Q2 Jadwalkan
                     </button>
                 @endif
                 @if(($task->kuadran ?? 0) !== 3)
                     <button @click="moveToKuadran({{ $task->id }}, 3); menuOpen = false" class="w-full text-left px-3 py-2 text-sm hover:bg-yellow-50 text-gray-700 flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span> Q3 — Delegate
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span> Q3 Delegasikan
                     </button>
                 @endif
                 @if(($task->kuadran ?? 0) !== 4)
                     <button @click="moveToKuadran({{ $task->id }}, 4); menuOpen = false" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 text-gray-700 flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> Q4 — Eliminate
+                        <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> Q4 Eliminasi
                     </button>
                 @endif
                 <div class="border-t border-gray-100 my-1"></div>

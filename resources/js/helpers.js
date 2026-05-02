@@ -77,10 +77,10 @@ export function formatDateTime(dateStr) {
  */
 export function getKuadranLabel(k) {
     return {
-        1: 'Q1 — DO NOW',
-        2: 'Q2 — SCHEDULE',
-        3: 'Q3 — DELEGATE',
-        4: 'Q4 — ELIMINATE',
+        1: 'Q1 Lakukan Sekarang',
+        2: 'Q2 Jadwalkan',
+        3: 'Q3 Delegasikan',
+        4: 'Q4 Eliminasi',
     }[k] || '-';
 }
 
