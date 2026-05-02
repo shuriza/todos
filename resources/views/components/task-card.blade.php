@@ -52,7 +52,7 @@
 
         {{-- 3-dot menu --}}
         <div class="relative" @click.stop>
-            <button @click="menuOpen = !menuOpen" class="p-1 text-gray-400 hover:text-gray-600 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+            <button @click="menuOpen = !menuOpen" class="p-1 text-gray-400 hover:text-gray-600 rounded sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/></svg>
             </button>
             <div x-show="menuOpen" @click.away="menuOpen = false" x-cloak
