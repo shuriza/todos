@@ -211,7 +211,7 @@
 
     @push('scripts')
     <script id="report-data" type="application/json">
-        {!! json_encode($chartData) !!}
+        @json($chartData)
     </script>
     @endpush
 </x-app-layout>

@@ -147,7 +147,7 @@
                     <div>
                         <p class="text-xs text-gray-500 font-medium">Tepat Waktu</p>
                         <p class="text-2xl font-bold text-gray-900">
-                            {{ $summary['on_time_rate'] !== null ? $summary['on_time_rate'] . '%' : '&mdash;' }}
+                            {!! $summary['on_time_rate'] !== null ? $summary['on_time_rate'] . '%' : '&mdash;' !!}
                         </p>
                     </div>
                 </div>

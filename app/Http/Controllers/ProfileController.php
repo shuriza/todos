@@ -44,10 +44,16 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        // Google-only users don't have a known password
+        // Verifikasi identitas sebelum hapus akun
         if (empty($user->google_id)) {
+            // User dengan password: verifikasi password
             $request->validateWithBag('userDeletion', [
                 'password' => ['required', 'current_password'],
+            ]);
+        } else {
+            // Google-only users: verifikasi dengan mengetik email
+            $request->validateWithBag('userDeletion', [
+                'confirm_email' => ['required', 'in:' . $user->email],
             ]);
         }
 

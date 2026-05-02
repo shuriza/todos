@@ -105,7 +105,7 @@ window.todoPageApp = function (config = {}) {
                 description: task.description || '',
                 category: task.category || 'kuliah',
                 priority: task.priority,
-                due_date: task.due_date || '',
+                due_date: task.due_date ? task.due_date.substring(0, 10) : '',
                 due_time: task.due_time || '',
             };
             this.showAddModal = true;

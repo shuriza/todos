@@ -172,7 +172,7 @@
         $calendarData = ['month' => $month, 'year' => $year, 'overdue' => $overdue, 'upcoming' => $upcoming];
     @endphp
     <script id="calendar-data" type="application/json">
-        {!! json_encode($calendarData) !!}
+        @json($calendarData)
     </script>
     {{-- JS loaded from resources/js/pages/calendar.js --}}
     @endpush
