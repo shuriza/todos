@@ -492,18 +492,12 @@
                 </div>
             </div>
 
-            {{-- Change Password (only for users with a local password) --}}
+            {{-- Change Password (hanya untuk user non-Google) --}}
             @if(empty($user->google_id))
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-1">Ubah Password</h3>
                 <p class="text-sm text-gray-500 mb-5">Pastikan akun menggunakan password yang kuat</p>
-
                 @include('profile.partials.update-password-form')
-            </div>
-            @else
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-1">Keamanan Akun</h3>
-                <p class="text-sm text-gray-500">Akun ini login menggunakan Google. Keamanan password dikelola oleh Google.</p>
             </div>
             @endif
 
