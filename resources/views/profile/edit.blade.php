@@ -492,15 +492,6 @@
                 </div>
             </div>
 
-            {{-- Change Password (hanya untuk user non-Google) --}}
-            @if(empty($user->google_id))
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-1">Ubah Password</h3>
-                <p class="text-sm text-gray-500 mb-5">Pastikan akun menggunakan password yang kuat</p>
-                @include('profile.partials.update-password-form')
-            </div>
-            @endif
-
             {{-- Danger Zone --}}
             <div class="bg-white rounded-xl border border-red-200 shadow-sm p-6">
                 <h3 class="text-lg font-bold text-red-600 mb-1">Zona Bahaya</h3>
