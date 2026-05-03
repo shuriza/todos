@@ -5,6 +5,12 @@ namespace App\Policies;
 use App\Models\Course;
 use App\Models\User;
 
+/**
+ * Policy otorisasi untuk mata kuliah (course).
+ * Memastikan user hanya bisa mengakses course miliknya sendiri.
+ *
+ * Fitur terkait: Google Classroom
+ */
 class CoursePolicy
 {
     /**

@@ -5,6 +5,12 @@ namespace App\Policies;
 use App\Models\Category;
 use App\Models\User;
 
+/**
+ * Policy otorisasi untuk kategori tugas.
+ * Memastikan user hanya bisa mengelola kategori miliknya sendiri.
+ *
+ * Fitur terkait: Kategori Tugas
+ */
 class CategoryPolicy
 {
     /**

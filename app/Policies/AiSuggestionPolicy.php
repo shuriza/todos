@@ -5,6 +5,12 @@ namespace App\Policies;
 use App\Models\AiSuggestion;
 use App\Models\User;
 
+/**
+ * Policy otorisasi untuk saran AI.
+ * Memastikan user hanya bisa mengakses saran AI yang ditujukan untuk tugasnya.
+ *
+ * Fitur terkait: Asisten Pintar
+ */
 class AiSuggestionPolicy
 {
     public function viewAny(User $user): bool

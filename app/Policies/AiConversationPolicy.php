@@ -5,6 +5,12 @@ namespace App\Policies;
 use App\Models\AiConversation;
 use App\Models\User;
 
+/**
+ * Policy otorisasi untuk percakapan AI.
+ * Memastikan user hanya bisa mengakses riwayat chat AI miliknya sendiri.
+ *
+ * Fitur terkait: Asisten Pintar
+ */
 class AiConversationPolicy
 {
     public function viewAny(User $user): bool
