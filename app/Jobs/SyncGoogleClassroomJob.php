@@ -11,6 +11,11 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Background job untuk sinkronisasi courses dan coursework dari Google Classroom API.
+ *
+ * Fitur terkait: Google Classroom
+ */
 class SyncGoogleClassroomJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;

@@ -7,6 +7,11 @@ use App\Services\GoogleClassroomService;
 use App\Services\TelegramService;
 use Illuminate\Console\Command;
 
+/**
+ * Artisan command untuk sinkronisasi manual data Google Classroom (courses & tasks) untuk semua user.
+ *
+ * Fitur terkait: Google Classroom
+ */
 class SyncClassroom extends Command
 {
     /**

@@ -5,6 +5,11 @@ namespace App\Http\Requests\Todo;
 use App\Rules\OwnedByUser;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validasi input saat mengupdate tugas (field bersifat opsional/sometimes).
+ *
+ * Fitur terkait: Manajemen Tugas
+ */
 class UpdateTodoRequest extends FormRequest
 {
     public function authorize(): bool

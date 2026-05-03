@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Model untuk menyimpan saran/rekomendasi AI yang terkait dengan tugas tertentu.
+ *
+ * Fitur terkait: Asisten Pintar
+ */
 class AiSuggestion extends Model
 {
     use HasFactory;

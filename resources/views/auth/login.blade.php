@@ -1,3 +1,8 @@
+{{--
+    Fitur: Autentikasi
+    Halaman: Login — menampilkan tombol "Masuk dengan Google" (OAuth SSO)
+    Controller: Auth\GoogleAuthController
+--}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>

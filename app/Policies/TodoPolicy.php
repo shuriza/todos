@@ -5,6 +5,11 @@ namespace App\Policies;
 use App\Models\Todo;
 use App\Models\User;
 
+/**
+ * Policy otorisasi untuk memastikan user hanya bisa mengakses tugas miliknya sendiri.
+ *
+ * Fitur terkait: Keamanan
+ */
 class TodoPolicy
 {
     /**

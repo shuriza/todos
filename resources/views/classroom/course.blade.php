@@ -1,3 +1,8 @@
+{{--
+    Fitur: Google Classroom
+    Halaman: Detail Mata Kuliah — daftar tugas per course yang disinkronkan
+    Controller: ClassroomController@showCourse
+--}}
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">

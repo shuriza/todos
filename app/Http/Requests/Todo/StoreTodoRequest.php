@@ -5,6 +5,11 @@ namespace App\Http\Requests\Todo;
 use App\Rules\OwnedByUser;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validasi input saat membuat tugas baru (judul, prioritas, deadline, kategori, dll).
+ *
+ * Fitur terkait: Manajemen Tugas
+ */
 class StoreTodoRequest extends FormRequest
 {
     public function authorize(): bool

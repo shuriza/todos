@@ -7,6 +7,11 @@ use App\Models\User;
 use App\Services\TelegramService;
 use Illuminate\Console\Command;
 
+/**
+ * Artisan command untuk mengirim pengingat tugas (deadline, overdue, daily summary) via Telegram.
+ *
+ * Fitur terkait: Notifikasi Telegram
+ */
 class SendReminders extends Command
 {
     /**

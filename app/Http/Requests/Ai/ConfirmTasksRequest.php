@@ -4,6 +4,11 @@ namespace App\Http\Requests\Ai;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validasi input konfirmasi tugas-tugas yang disarankan oleh AI sebelum disimpan.
+ *
+ * Fitur terkait: Asisten Pintar
+ */
 class ConfirmTasksRequest extends FormRequest
 {
     public function authorize(): bool

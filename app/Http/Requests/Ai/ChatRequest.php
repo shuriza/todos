@@ -5,6 +5,11 @@ namespace App\Http\Requests\Ai;
 use App\Rules\OwnedByUser;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validasi input pesan chat yang dikirim user ke asisten AI.
+ *
+ * Fitur terkait: Asisten Pintar
+ */
 class ChatRequest extends FormRequest
 {
     public function authorize(): bool

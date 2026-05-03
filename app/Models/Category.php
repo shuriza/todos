@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Model kategori buatan user untuk mengelompokkan tugas berdasarkan label tertentu.
+ *
+ * Fitur terkait: Kategori Tugas
+ */
 class Category extends Model
 {
     use HasFactory;

@@ -8,6 +8,11 @@ use App\Models\Category;
 use App\Support\ApiResponse;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Controller CRUD API untuk mengelola kategori tugas (JSON response, tanpa halaman UI).
+ *
+ * Fitur terkait: Kategori Tugas
+ */
 class CategoryController extends Controller
 {
     public function index()

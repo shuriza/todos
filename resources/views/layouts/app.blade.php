@@ -1,3 +1,8 @@
+{{--
+    Layout: App (Utama)
+    Dipakai oleh semua halaman setelah login.
+    Berisi: sidebar navigasi, header, area konten utama, toast notification container.
+--}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>

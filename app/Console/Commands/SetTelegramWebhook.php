@@ -5,6 +5,11 @@ namespace App\Console\Commands;
 use App\Services\TelegramService;
 use Illuminate\Console\Command;
 
+/**
+ * Artisan command untuk mendaftarkan, menghapus, atau melihat info webhook Telegram Bot.
+ *
+ * Fitur terkait: Setup Telegram
+ */
 class SetTelegramWebhook extends Command
 {
     /**

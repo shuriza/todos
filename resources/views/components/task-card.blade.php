@@ -1,3 +1,9 @@
+{{--
+    Komponen: Task Card
+    Dipakai di: Dashboard (home.blade.php) — menampilkan satu tugas dalam kuadran Eisenhower
+    Props: $task (model Todo), $color (red/blue/yellow/gray sesuai kuadran)
+    Fitur: checkbox selesai, info deadline, badge course, menu pindah kuadran, hapus
+--}}
 @props(['task', 'color' => 'gray'])
 
 @php
