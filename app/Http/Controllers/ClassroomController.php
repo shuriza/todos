@@ -58,23 +58,8 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Sync courses from Google Classroom.
-     */
-    public function syncCourses()
-    {
-        $user = Auth::user();
-
-        if (empty($user->google_access_token)) {
-            return back()->with('error', 'Anda belum menghubungkan akun Google. Silakan login ulang dengan Google.');
-        }
-
-        SyncGoogleClassroomJob::dispatch($user);
-
-        return back()->with('success', 'Sinkronisasi mata kuliah & tugas dimulai di background. Hasilnya akan tersedia dalam beberapa saat — silakan refresh halaman ini.');
-    }
-
-    /**
-     * Sync tasks/assignments from all Google Classroom courses.
+     * Sinkronisasi mata kuliah dan tugas dari Google Classroom.
+     * Dispatch background job agar tidak memblokir response HTTP.
      */
     public function syncTasks()
     {

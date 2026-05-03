@@ -39,9 +39,6 @@ Route::middleware('auth')->group(function () {
     | Matriks Eisenhower 4 kuadran.
     */
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    Route::get('/dashboard', function () {
-        return redirect()->route('home');
-    })->name('dashboard');
     
     /*
     |----------------------------------------------------------------------
@@ -91,8 +88,7 @@ Route::middleware('auth')->group(function () {
     | Tugas yang disinkronkan otomatis masuk ke daftar tugas.
     */
     Route::get('/classroom', [ClassroomController::class, 'index'])->name('classroom.index');
-    Route::post('/classroom/sync-courses', [ClassroomController::class, 'syncCourses'])->name('classroom.sync-courses');
-    Route::post('/classroom/sync-tasks', [ClassroomController::class, 'syncTasks'])->name('classroom.sync-tasks');
+    Route::post('/classroom/sync', [ClassroomController::class, 'syncTasks'])->name('classroom.sync');
     Route::get('/classroom/course/{course}', [ClassroomController::class, 'showCourse'])->name('classroom.course');
     Route::delete('/classroom/course/{course}', [ClassroomController::class, 'destroyCourse'])->name('classroom.course.destroy');
 

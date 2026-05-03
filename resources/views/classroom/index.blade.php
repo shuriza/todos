@@ -22,7 +22,7 @@
                         </svg>
                         Hubungkan Ulang
                     </a>
-                    <form method="POST" action="{{ route('classroom.sync-tasks') }}" x-data="{ loading: false }" @submit="loading = true">
+                    <form method="POST" action="{{ route('classroom.sync') }}" x-data="{ loading: false }" @submit="loading = true">
                         @csrf
                         <button type="submit" :disabled="loading" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-lg text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
                             <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

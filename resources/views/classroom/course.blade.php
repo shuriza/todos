@@ -26,7 +26,7 @@
                         @endif
                     </div>
                     <div class="flex gap-3">
-                        <form method="POST" action="{{ route('classroom.sync-tasks') }}">
+                        <form method="POST" action="{{ route('classroom.sync') }}">
                             @csrf
                             <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-lg text-sm font-medium text-white hover:bg-indigo-700 transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
