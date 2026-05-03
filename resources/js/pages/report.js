@@ -54,7 +54,7 @@ window.reportApp = function () {
                 try {
                     this.data = JSON.parse(el.textContent);
                 } catch (e) {
-                    console.error('Failed to parse report data:', e);
+                    // Parse error — data tetap pakai default
                 }
             }
 
@@ -97,7 +97,7 @@ window.reportApp = function () {
                     this.renderAllCharts();
                 });
             } catch (error) {
-                console.error('Failed to fetch chart data:', error);
+                // Fetch error — biarkan data lama
                 window.dispatchEvent(new CustomEvent('toast', {
                     detail: { message: 'Gagal memuat data laporan', type: 'error' }
                 }));

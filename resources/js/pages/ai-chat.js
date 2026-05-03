@@ -69,7 +69,6 @@ window.chatBot = function () {
                     this._addErrorMessage(data.error || 'Maaf, terjadi kesalahan. Coba lagi ya.');
                 }
             } catch (e) {
-                console.error(e);
                 this._addErrorMessage('Koneksi gagal. Periksa API key dan coba lagi.');
             } finally {
                 this.loading = false;
@@ -108,7 +107,6 @@ window.chatBot = function () {
                     this._addErrorMessage('Gagal menambahkan tugas. Silakan coba lagi.');
                 }
             } catch (e) {
-                console.error(e);
                 this._addErrorMessage('Koneksi gagal saat menambahkan tugas.');
             } finally {
                 this.confirmingTasks = false;

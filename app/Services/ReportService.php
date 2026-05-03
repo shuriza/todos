@@ -427,31 +427,6 @@ class ReportService
         ];
     }
 
-    /**
-     * Ambil daftar semua task user untuk sheet Excel.
-     */
-    public function getAllTasksForExport(int $userId, string $period = '30d')
-    {
-        [$start, $end] = $this->parsePeriod($period);
-
-        return Todo::where('user_id', $userId)
-            ->whereBetween('created_at', [$start, $end])
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(fn(Todo $todo) => [
-                'Judul'        => $todo->title,
-                'Deskripsi'    => $todo->description ?? '-',
-                'Status'       => $this->translateStatus($todo->status),
-                'Prioritas'    => $this->translatePriority($todo->priority),
-                'Kuadran'      => $todo->kuadran_label,
-                'Kategori'     => $this->translateCategory($todo->category),
-                'Sumber'       => $todo->sumber === 'google_classroom' ? 'Google Classroom' : 'Manual',
-                'Deadline'     => $todo->due_date?->format('d M Y') ?? '-',
-                'Dibuat'       => $todo->created_at->format('d M Y H:i'),
-                'Diselesaikan' => $todo->completed_at?->format('d M Y H:i') ?? '-',
-            ]);
-    }
-
     // =========================================================================
     // CACHE MANAGEMENT
     // =========================================================================
@@ -489,35 +464,5 @@ class ReportService
         }
 
         return cache()->remember($cacheKey, $ttl, $resolver);
-    }
-
-    private function translateStatus(string $status): string
-    {
-        return match ($status) {
-            'todo'        => 'Belum Dikerjakan',
-            'in_progress' => 'Sedang Dikerjakan',
-            'completed'   => 'Selesai',
-            default       => $status,
-        };
-    }
-
-    private function translatePriority(string $priority): string
-    {
-        return match ($priority) {
-            'high'   => 'Tinggi',
-            'medium' => 'Sedang',
-            'low'    => 'Rendah',
-            default  => $priority,
-        };
-    }
-
-    private function translateCategory(string $category): string
-    {
-        return match ($category) {
-            'kuliah'         => 'Kuliah',
-            'pekerjaan'      => 'Pekerjaan',
-            'daily_activity' => 'Aktivitas Harian',
-            default          => $category,
-        };
     }
 }
