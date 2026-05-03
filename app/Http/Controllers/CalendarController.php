@@ -15,37 +15,20 @@ class CalendarController extends Controller
         $month = $request->get('month', now()->month);
         $year = $request->get('year', now()->year);
 
-        $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
-        $endOfMonth = Carbon::create($year, $month, 1)->endOfMonth();
-
-        // Get all todos with due_date in this month
-        $todos = Todo::where('user_id', $user->id)
-            ->whereNotNull('due_date')
-            ->whereBetween('due_date', [$startOfMonth, $endOfMonth])
-            ->with('course')
-            ->orderBy('due_date')
-            ->orderBy('due_time')
-            ->get();
-
-        // Group todos by date
-        $todosByDate = $todos->groupBy(function ($todo) {
-            return Carbon::parse($todo->due_date)->format('Y-m-d');
-        });
-
-        // Upcoming tasks (next 7 days)
+        // Upcoming tasks (next 7 days, exclude today's overdue)
         $upcoming = Todo::where('user_id', $user->id)
             ->whereNotNull('due_date')
-            ->whereBetween('due_date', [today(), today()->addDays(7)])
+            ->whereBetween('due_date', [today()->addDay(), today()->addDays(7)])
             ->where('status', '!=', 'completed')
             ->with('course')
             ->orderBy('due_date')
             ->orderBy('due_time')
             ->get();
 
-        // Overdue
+        // Overdue (deadline sudah lewat)
         $overdue = Todo::where('user_id', $user->id)
             ->whereNotNull('due_date')
-            ->where('due_date', '<', now()->startOfDay())
+            ->where('due_date', '<', today())
             ->where('status', '!=', 'completed')
             ->with('course')
             ->orderBy('due_date')

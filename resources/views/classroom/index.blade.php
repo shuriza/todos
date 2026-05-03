@@ -105,7 +105,7 @@
             </div>
             <div class="bg-white rounded-xl border border-gray-200 p-4">
                 <div class="text-2xl font-bold text-yellow-600">{{ $stats['pending'] }}</div>
-                <div class="text-xs text-gray-500 mt-1">Pending</div>
+                <div class="text-xs text-gray-500 mt-1">Belum Selesai</div>
             </div>
             <div class="bg-white rounded-xl border border-gray-200 p-4">
                 <div class="text-2xl font-bold text-green-600">{{ $stats['completed'] }}</div>
@@ -247,7 +247,7 @@
                 },
 
                 kuadranName(k) {
-                    return { 1: 'DO NOW', 2: 'SCHEDULE', 3: 'DELEGATE', 4: 'ELIMINATE' }[k] || '-';
+                    return { 1: 'Lakukan Sekarang', 2: 'Jadwalkan', 3: 'Delegasikan', 4: 'Eliminasi' }[k] || '-';
                 },
 
                 kuadranBadge(k) {

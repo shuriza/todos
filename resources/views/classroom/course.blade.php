@@ -32,7 +32,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                 </svg>
-                                Sync Tugas
+                                Sinkronisasi
                             </button>
                         </form>
                     </div>
@@ -46,7 +46,7 @@
                     </div>
                     <div class="bg-yellow-50 rounded-lg p-3 text-center">
                         <div class="text-xl font-bold text-yellow-600">{{ $stats['pending'] }}</div>
-                        <div class="text-xs text-gray-500">Pending</div>
+                        <div class="text-xs text-gray-500">Belum Selesai</div>
                     </div>
                     <div class="bg-blue-50 rounded-lg p-3 text-center">
                         <div class="text-xl font-bold text-blue-600">{{ $stats['in_progress'] }}</div>
@@ -91,7 +91,7 @@
                                 3 => 'border-l-yellow-500',
                                 4 => 'border-l-gray-400',
                             ];
-                            $kuadranNames = [1 => 'DO NOW', 2 => 'SCHEDULE', 3 => 'DELEGATE', 4 => 'ELIMINATE'];
+                            $kuadranNames = [1 => 'Lakukan Sekarang', 2 => 'Jadwalkan', 3 => 'Delegasikan', 4 => 'Eliminasi'];
                             $kuadranBadgeColors = [
                                 1 => 'bg-red-100 text-red-700',
                                 2 => 'bg-blue-100 text-blue-700',

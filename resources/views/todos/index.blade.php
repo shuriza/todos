@@ -40,10 +40,10 @@
 
                     <select name="kuadran" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
                         <option value="all" {{ ($filters['kuadran'] ?? '') === 'all' || empty($filters['kuadran'] ?? '') ? 'selected' : '' }}>Semua Kuadran</option>
-                        <option value="1" {{ ($filters['kuadran'] ?? '') === '1' ? 'selected' : '' }}>Q1 - Do Now</option>
-                        <option value="2" {{ ($filters['kuadran'] ?? '') === '2' ? 'selected' : '' }}>Q2 - Schedule</option>
-                        <option value="3" {{ ($filters['kuadran'] ?? '') === '3' ? 'selected' : '' }}>Q3 - Delegate</option>
-                        <option value="4" {{ ($filters['kuadran'] ?? '') === '4' ? 'selected' : '' }}>Q4 - Eliminate</option>
+                        <option value="1" {{ ($filters['kuadran'] ?? '') === '1' ? 'selected' : '' }}>Q1 Lakukan Sekarang</option>
+                        <option value="2" {{ ($filters['kuadran'] ?? '') === '2' ? 'selected' : '' }}>Q2 Jadwalkan</option>
+                        <option value="3" {{ ($filters['kuadran'] ?? '') === '3' ? 'selected' : '' }}>Q3 Delegasikan</option>
+                        <option value="4" {{ ($filters['kuadran'] ?? '') === '4' ? 'selected' : '' }}>Q4 Eliminasi</option>
                     </select>
 
                     <select name="category" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
@@ -111,7 +111,7 @@
                     @php
                         $isOverdue = $todo->due_date && $todo->due_date->isPast() && $todo->status !== 'completed';
                         $kuadranColors = [1 => 'bg-red-100 text-red-700', 2 => 'bg-blue-100 text-blue-700', 3 => 'bg-yellow-100 text-yellow-700', 4 => 'bg-gray-100 text-gray-600'];
-                        $kuadranNames = [1 => 'Do Now', 2 => 'Schedule', 3 => 'Delegate', 4 => 'Eliminate'];
+                        $kuadranNames = [1 => 'Lakukan Sekarang', 2 => 'Jadwalkan', 3 => 'Delegasikan', 4 => 'Eliminasi'];
                         $priorityColors = ['high' => 'bg-red-100 text-red-700', 'medium' => 'bg-yellow-100 text-yellow-700', 'low' => 'bg-green-100 text-green-700'];
                         $priorityNames = ['high' => 'Tinggi', 'medium' => 'Sedang', 'low' => 'Rendah'];
                     @endphp

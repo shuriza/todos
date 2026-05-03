@@ -22,7 +22,7 @@ window.reportApp = function () {
         period: '30d',
         loading: false,
         data: {
-            overview: { total: 0, completed: 0, pending: 0, overdue: 0, completion_rate: 0, avg_completion_hours: null },
+            overview: { total: 0, completed: 0, pending: 0, overdue: 0, completion_rate: 0, on_time_rate: null },
             trend: [],
             kuadran: { q1: 0, q2: 0, q3: 0, q4: 0 },
             priority: { high: 0, medium: 0, low: 0 },
@@ -206,7 +206,7 @@ window.reportApp = function () {
             this.charts.kuadran = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Q1 - Do Now', 'Q2 - Schedule', 'Q3 - Delegate', 'Q4 - Eliminate'],
+                    labels: ['Q1 Lakukan Sekarang', 'Q2 Jadwalkan', 'Q3 Delegasikan', 'Q4 Eliminasi'],
                     datasets: [{
                         data: [k.q1 || 0, k.q2 || 0, k.q3 || 0, k.q4 || 0],
                         backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#6b7280'],

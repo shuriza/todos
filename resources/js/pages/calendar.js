@@ -55,9 +55,11 @@ window.calendarApp = function () {
             const url = `/calendar/events?start=${this.fmtDate(gridStart)}&end=${this.fmtDate(gridEnd)}`;
             try {
                 const res = await fetch(url);
-                this.events = await res.json();
+                if (res.ok) {
+                    this.events = await res.json();
+                }
             } catch (e) {
-                console.error(e);
+                // Silent fail — events tetap kosong
             }
         },
 

@@ -65,10 +65,10 @@ class ReportSummarySheet implements FromArray, WithTitle, WithHeadings, WithStyl
 
             // Kuadran
             ['--- DISTRIBUSI KUADRAN ---', ''],
-            ['Q1 - Do Now (Mendesak & Penting)', $kuadran['q1']],
-            ['Q2 - Schedule (Tidak Mendesak & Penting)', $kuadran['q2']],
-            ['Q3 - Delegate (Mendesak & Tidak Penting)', $kuadran['q3']],
-            ['Q4 - Eliminate (Tidak Mendesak & Tidak Penting)', $kuadran['q4']],
+            ['Q1 Lakukan Sekarang (Mendesak & Penting)', $kuadran['q1']],
+            ['Q2 Jadwalkan (Tidak Mendesak & Penting)', $kuadran['q2']],
+            ['Q3 Delegasikan (Mendesak & Tidak Penting)', $kuadran['q3']],
+            ['Q4 Eliminasi (Tidak Mendesak & Tidak Penting)', $kuadran['q4']],
             ['', ''],
 
             // Prioritas

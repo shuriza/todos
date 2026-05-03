@@ -92,19 +92,19 @@
                     <div class="section-title">Distribusi Kuadran Eisenhower</div>
                     <table class="stats-grid">
                         <tr>
-                            <td class="label">Q1 - Do Now</td>
+                            <td class="label">Q1 Lakukan Sekarang</td>
                             <td class="value">{{ $kuadran['q1'] }}</td>
                         </tr>
                         <tr>
-                            <td class="label">Q2 - Schedule</td>
+                            <td class="label">Q2 Jadwalkan</td>
                             <td class="value">{{ $kuadran['q2'] }}</td>
                         </tr>
                         <tr>
-                            <td class="label">Q3 - Delegate</td>
+                            <td class="label">Q3 Delegasikan</td>
                             <td class="value">{{ $kuadran['q3'] }}</td>
                         </tr>
                         <tr>
-                            <td class="label">Q4 - Eliminate</td>
+                            <td class="label">Q4 Eliminasi</td>
                             <td class="value">{{ $kuadran['q4'] }}</td>
                         </tr>
                     </table>
@@ -175,11 +175,11 @@
                     <td>{{ $task['completed_at'] }}</td>
                     <td style="font-weight: 700;">
                         @if($task['hours'] < 1)
-                            {{ round($task['hours'] * 60) }}m
+                            {{ round($task['hours'] * 60) }} menit
                         @elseif($task['hours'] < 24)
-                            {{ round($task['hours'], 1) }}j
+                            {{ round($task['hours'], 1) }} jam
                         @else
-                            {{ round($task['hours'] / 24, 1) }}h
+                            {{ round($task['hours'] / 24, 1) }} hari
                         @endif
                     </td>
                 </tr>
