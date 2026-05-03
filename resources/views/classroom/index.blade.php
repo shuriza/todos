@@ -151,6 +151,15 @@
                             @endif
                         </button>
                     @endforeach
+                    {{-- Link ke halaman detail course yang aktif --}}
+                    @foreach ($courses as $course)
+                        <a x-show="activeTab === '{{ $course->id }}'" x-cloak
+                           href="{{ route('classroom.course', $course) }}"
+                           class="ml-auto px-3 py-1.5 text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 self-center">
+                            Lihat Detail
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    @endforeach
                 </nav>
             </div>
 

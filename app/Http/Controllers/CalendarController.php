@@ -52,6 +52,11 @@ class CalendarController extends Controller
 
     public function events(Request $request)
     {
+        $request->validate([
+            'start' => 'nullable|date',
+            'end'   => 'nullable|date',
+        ]);
+
         $user = Auth::user();
         $start = $request->get('start', now()->startOfMonth()->toDateString());
         $end = $request->get('end', now()->endOfMonth()->toDateString());
