@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Arsip Tugas
+    Halaman: Daftar tugas selesai dengan filter periode dan export PDF
+    Controller: ArchiveController
+    JS: -
+--}}
 <x-app-layout>
     <x-slot name="header">
         <div>

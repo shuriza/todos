@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Semua Tugas
+    Halaman: Daftar tugas dengan filter, pencarian, drag-and-drop reorder, CRUD modal
+    Controller: TodoController
+    JS: resources/js/pages/todos.js
+--}}
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">

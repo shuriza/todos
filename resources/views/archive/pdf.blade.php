@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Export PDF Arsip
+    Halaman: Template PDF portofolio tugas selesai per mata kuliah
+    Controller: ArchiveController@exportPdf
+    JS: -
+--}}
 <!DOCTYPE html>
 <html lang="id">
 <head>

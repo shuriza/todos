@@ -1,5 +1,22 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Console Routes & Scheduled Tasks
+|--------------------------------------------------------------------------
+|
+| Definisi command artisan kustom dan jadwal tugas terjadwal (scheduler).
+| Scheduler hanya aktif di environment production untuk mencegah
+| duplikasi notifikasi saat development lokal.
+|
+| Jadwal meliputi:
+| - Reminder deadline & overdue (setiap menit)
+| - Daily summary (setiap menit, kirim sesuai preferensi waktu user)
+| - Sync Google Classroom (setiap 6 jam)
+| - Rekalkulasi kuadran Eisenhower (setiap jam)
+|
+*/
+
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;

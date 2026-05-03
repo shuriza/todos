@@ -7,6 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * TelegramBotController
+ *
+ * Menangani webhook dari Telegram Bot — menerima dan memproses update
+ * yang dikirim oleh server Telegram (pesan, command, dsb).
+ * Endpoint ini tidak memerlukan autentikasi pengguna maupun CSRF,
+ * proteksi dilakukan melalui header X-Telegram-Bot-Api-Secret-Token.
+ *
+ * Endpoints:
+ *   POST /telegram/webhook -> handleWebhook() -> Terima update dari Telegram
+ */
 class TelegramBotController extends Controller
 {
     protected TelegramBotService $botService;

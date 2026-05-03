@@ -1,5 +1,16 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Konfigurasi Aplikasi Tugas (Todos)
+|--------------------------------------------------------------------------
+|
+| Pengaturan inti untuk fitur manajemen tugas: definisi kuadran Eisenhower,
+| threshold urgensi, pagination, palet warna prioritas & kategori,
+| dan TTL cache statistik.
+|
+*/
+
 return [
 
     /*

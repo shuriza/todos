@@ -11,6 +11,21 @@ use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * AiAssistantController
+ *
+ * Menangani fitur Asisten Pintar AI berbasis Gemini untuk membantu
+ * pengguna mengelola tugas melalui chat, saran otomatis, dan perencanaan harian.
+ *
+ * Endpoints:
+ *   GET  /ai                       -> index()        -> Halaman antarmuka AI assistant
+ *   POST /ai/chat                  -> chat()         -> Kirim pesan ke AI assistant
+ *   POST /ai/confirm-tasks         -> confirmTasks() -> Konfirmasi tugas yang disarankan AI
+ *   GET  /ai/history/{sessionId}   -> history()      -> Riwayat percakapan per sesi
+ *   GET  /ai/sessions              -> sessions()     -> Daftar sesi percakapan
+ *   GET  /ai/suggestions/{todoId}  -> suggestions()  -> Saran AI untuk tugas tertentu
+ *   GET  /ai/daily-planning        -> dailyPlanning() -> Perencanaan harian otomatis
+ */
 class AiAssistantController extends Controller
 {
     public function __construct(protected AiAssistantService $aiService)

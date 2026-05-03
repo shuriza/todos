@@ -9,6 +9,19 @@ use App\Services\GoogleClassroomService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * ClassroomController
+ *
+ * Menangani integrasi Google Classroom — sinkronisasi mata kuliah (courses)
+ * dan tugas (coursework) dari Google Classroom ke dalam sistem todo.
+ *
+ * Endpoints:
+ *   GET    /classroom                  -> index()         -> Halaman integrasi Google Classroom
+ *   POST   /classroom/sync-courses     -> syncCourses()   -> Sinkronisasi daftar mata kuliah
+ *   POST   /classroom/sync-tasks       -> syncTasks()     -> Sinkronisasi tugas dari Classroom
+ *   GET    /classroom/course/{course}  -> showCourse()    -> Detail mata kuliah & daftar tugas
+ *   DELETE /classroom/course/{course}  -> destroyCourse() -> Hapus mata kuliah beserta tugasnya
+ */
 class ClassroomController extends Controller
 {
     /**

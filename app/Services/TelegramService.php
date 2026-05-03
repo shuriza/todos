@@ -8,6 +8,22 @@ use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * TelegramService
+ *
+ * Service low-level untuk komunikasi dengan Telegram Bot API.
+ * Menangani pengiriman pesan, notifikasi deadline, alert tugas terlambat,
+ * ringkasan harian, serta manajemen webhook.
+ *
+ * Fitur: Telegram API (Transport Layer)
+ *
+ * Method utama:
+ *  - sendMessage()          Kirim pesan ke chat Telegram
+ *  - sendDeadlineReminder() Kirim pengingat deadline tugas
+ *  - sendOverdueAlert()     Kirim peringatan tugas yang sudah lewat deadline
+ *  - sendDailySummary()     Kirim ringkasan tugas harian
+ *  - setWebhook()           Daftarkan URL webhook ke Telegram
+ */
 class TelegramService
 {
     protected string $botToken;

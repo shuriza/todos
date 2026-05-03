@@ -9,6 +9,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
+/**
+ * ProfileController
+ *
+ * Menangani fitur Profil Pengguna — menampilkan form edit profil,
+ * memperbarui informasi pengguna, dan menghapus akun.
+ *
+ * Endpoints:
+ *   GET    /profile -> edit()    -> Halaman edit profil pengguna
+ *   PATCH  /profile -> update()  -> Perbarui informasi profil
+ *   DELETE /profile -> destroy() -> Hapus akun pengguna
+ */
 class ProfileController extends Controller
 {
     /**

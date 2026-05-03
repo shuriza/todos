@@ -11,6 +11,19 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
+/**
+ * GoogleAuthController
+ *
+ * Menangani autentikasi pengguna melalui Google OAuth 2.0,
+ * termasuk login, callback setelah otorisasi, reconnect untuk
+ * memperbarui token, dan pengecekan akses Google Classroom.
+ *
+ * Endpoints:
+ *   GET /auth/google              -> redirect()    -> Redirect ke halaman login Google
+ *   GET /auth/google/callback     -> callback()    -> Callback setelah otorisasi Google
+ *   GET /auth/google/reconnect    -> reconnect()   -> Hubungkan ulang akun Google
+ *   GET /auth/google/check-access -> checkAccess() -> Cek status akses Google Classroom
+ */
 class GoogleAuthController extends Controller
 {
     /**

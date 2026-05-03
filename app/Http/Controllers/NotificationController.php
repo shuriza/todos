@@ -9,6 +9,20 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * NotificationController
+ *
+ * Menangani pengaturan notifikasi Telegram pengguna, termasuk penyimpanan
+ * Chat ID, pengujian pengiriman pesan, preferensi notifikasi, dan riwayat notifikasi.
+ *
+ * Endpoints:
+ *   POST /notifikasi/telegram/save-chat-id -> saveChatId()          -> Simpan Telegram Chat ID
+ *   POST /notifikasi/telegram/test         -> testTelegram()        -> Kirim notifikasi percobaan
+ *   POST /notifikasi/telegram/disconnect   -> disconnectTelegram()  -> Putuskan koneksi Telegram
+ *   POST /notifikasi/preferences           -> updatePreferences()   -> Perbarui preferensi notifikasi
+ *   GET  /notifikasi/history               -> history()             -> Riwayat notifikasi (JSON)
+ *   GET  /notifikasi/stats                 -> stats()               -> Statistik notifikasi (JSON)
+ */
 class NotificationController extends Controller
 {
     protected TelegramService $telegramService;

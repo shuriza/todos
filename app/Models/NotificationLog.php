@@ -6,6 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * NotificationLog
+ *
+ * Model log notifikasi yang dikirim melalui Telegram.
+ * Mencatat setiap notifikasi beserta status pengiriman (sent/failed/pending),
+ * tipe notifikasi, isi pesan, dan waktu kirim.
+ *
+ * Fitur: Logging Notifikasi Telegram
+ *
+ * Field penting: tipe_notifikasi, status_kirim, pesan, waktu_kirim
+ *
+ * Method utama:
+ *  - user(), todo()      Relasi ke model User dan Todo
+ *  - scopeTelegram()     Scope query hanya notifikasi Telegram
+ *  - scopeSent/Failed()  Scope berdasarkan status pengiriman
+ */
 class NotificationLog extends Model
 {
     use HasFactory;

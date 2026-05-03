@@ -8,6 +8,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
 
+/**
+ * Todo
+ *
+ * Model utama untuk data tugas pengguna.
+ * Menyimpan informasi lengkap tugas termasuk judul, deskripsi, prioritas,
+ * status, kuadran Eisenhower, deadline, dan sumber tugas (manual/classroom).
+ *
+ * Fitur: Manajemen Tugas
+ *
+ * Field penting: title, description, priority, status, kuadran, due_date,
+ *                due_time, sumber, course_id, completed_at
+ *
+ * Method utama:
+ *  - hitungKuadran()          Hitung kuadran Eisenhower berdasarkan prioritas & deadline
+ *  - refreshKuadranForUser()  Perbarui kuadran semua tugas aktif milik user
+ *  - user(), course()         Relasi ke model User dan Course
+ */
 class Todo extends Model
 {
     use HasFactory;

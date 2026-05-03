@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Profil & Pengaturan
+    Halaman: Edit profil, integrasi Google/Telegram, preferensi notifikasi
+    Controller: ProfileController
+    JS: resources/js/pages/telegram.js
+--}}
 <x-app-layout>
     <x-slot name="header">
         <div>

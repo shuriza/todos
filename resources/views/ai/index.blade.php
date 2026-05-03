@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Asisten Pintar
+    Halaman: Chat interface dengan AI Gemini, quick actions, task preview
+    Controller: AiAssistantController
+    JS: resources/js/pages/ai-chat.js
+--}}
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">

@@ -1,3 +1,12 @@
+/**
+ * ============================================
+ * Entry Point Aplikasi — app.js
+ * ============================================
+ * File utama JavaScript yang di-bundle oleh Vite.
+ * Menginisialisasi Alpine.js, mengimpor semua komponen halaman,
+ * dan mendaftarkan toast notification manager global.
+ */
+
 import './bootstrap';
 
 import Alpine from 'alpinejs';

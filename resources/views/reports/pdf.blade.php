@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Export PDF Laporan
+    Halaman: Template PDF untuk laporan produktivitas
+    Controller: ReportController@exportPdf
+    JS: -
+--}}
 <!DOCTYPE html>
 <html lang="id">
 <head>

@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Google Classroom
+    Halaman: Daftar mata kuliah dan tugas yang disinkronkan dari Classroom
+    Controller: ClassroomController
+    JS: -
+--}}
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">

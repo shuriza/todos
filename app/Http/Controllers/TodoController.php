@@ -16,6 +16,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * TodoController
+ *
+ * Menangani semua operasi manajemen tugas (CRUD), termasuk filter,
+ * pengurutan ulang (reorder), dan statistik tugas pengguna.
+ *
+ * Endpoints:
+ *   GET    /todos            -> index()      -> Daftar tugas dengan paginasi & filter
+ *   POST   /todos            -> store()      -> Tambah tugas baru
+ *   PUT    /todos/{todo}     -> update()     -> Perbarui tugas
+ *   DELETE /todos/{todo}     -> destroy()    -> Hapus tugas
+ *   POST   /todos/reorder    -> reorder()    -> Ubah urutan tugas (drag & drop)
+ *   GET    /todos/statistics  -> statistics() -> Data statistik tugas (JSON)
+ */
 class TodoController extends Controller
 {
     /**

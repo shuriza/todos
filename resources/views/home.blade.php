@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Dashboard Beranda
+    Halaman: Menampilkan statistik tugas dan Matriks Eisenhower 4 kuadran
+    Controller: HomeController
+    JS: resources/js/pages/dashboard.js
+--}}
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">

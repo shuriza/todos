@@ -9,6 +9,23 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * GoogleClassroomService
+ *
+ * Service untuk integrasi Google Classroom API.
+ * Melakukan sinkronisasi mata kuliah (courses) dan tugas (coursework)
+ * dari akun Google Classroom pengguna, termasuk auto-refresh token
+ * ketika access token sudah kedaluwarsa.
+ *
+ * Fitur: Google Classroom Sync
+ *
+ * Method utama:
+ *  - hasAccess()       Cek apakah user punya akses Google Classroom yang valid
+ *  - apiGet()          Request GET ke Classroom API dengan auto-refresh token
+ *  - syncCourses()     Sinkronisasi daftar mata kuliah dari Classroom
+ *  - syncCoursework()  Sinkronisasi tugas/coursework ke tabel todos
+ *  - refreshToken()    Perbarui access token menggunakan refresh token
+ */
 class GoogleClassroomService
 {
     protected User $user;

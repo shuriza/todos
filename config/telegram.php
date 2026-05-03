@@ -1,5 +1,16 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Konfigurasi Notifikasi Telegram
+|--------------------------------------------------------------------------
+|
+| Pengaturan untuk integrasi Telegram Bot: kredensial bot, keamanan
+| webhook, jadwal reminder (deadline, overdue, daily summary),
+| dan konfigurasi API Telegram.
+|
+*/
+
 return [
 
     /*

@@ -1,5 +1,16 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Konfigurasi Asisten Pintar (AI)
+|--------------------------------------------------------------------------
+|
+| Pengaturan untuk integrasi AI Gemini: kredensial API, kebijakan retry,
+| konteks prompt (jumlah tugas aktif yang disisipkan), batas riwayat
+| percakapan, dan validasi task preview.
+|
+*/
+
 return [
 
     /*

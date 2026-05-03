@@ -7,6 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
+/**
+ * CalendarController
+ *
+ * Menangani fitur Kalender Tugas dengan tampilan bulanan.
+ * Menampilkan tugas mendatang, tugas terlambat (overdue), dan
+ * menyediakan API events untuk rendering kalender di sisi klien.
+ *
+ * Endpoints:
+ *   GET /calendar        -> index()  -> Halaman kalender bulanan
+ *   GET /calendar/events -> events() -> JSON data events untuk kalender (AJAX)
+ */
 class CalendarController extends Controller
 {
     public function index(Request $request)

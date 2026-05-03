@@ -8,6 +8,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * User
+ *
+ * Model pengguna aplikasi TodoList Mahasiswa.
+ * Menyimpan data profil, kredensial Google OAuth, integrasi Telegram,
+ * dan preferensi notifikasi pengguna.
+ *
+ * Fitur: Autentikasi & Profil Pengguna
+ *
+ * Field penting: name, email, google_id, telegram_chat_id,
+ *                notification_preferences, nim, prodi
+ *
+ * Method utama:
+ *  - hasTelegram()          Cek apakah user sudah terhubung ke Telegram
+ *  - hasGoogleClassroom()   Cek apakah user punya akses Google Classroom
+ *  - getNotifPref()         Ambil preferensi notifikasi user
+ *  - todos(), courses()     Relasi ke model Todo dan Course
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */

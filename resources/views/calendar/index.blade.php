@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Kalender Tugas
+    Halaman: Tampilan kalender bulanan dengan event dots dan sidebar tugas
+    Controller: CalendarController
+    JS: resources/js/pages/calendar.js
+--}}
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">

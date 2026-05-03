@@ -6,6 +6,16 @@ use App\Models\Course;
 use App\Models\Todo;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * HomeController
+ *
+ * Menangani halaman Dashboard Beranda dengan tampilan Matriks Eisenhower.
+ * Menampilkan ringkasan statistik tugas dan pengelompokan tugas berdasarkan
+ * empat kuadran prioritas (Do Now, Schedule, Delegate, Eliminate).
+ *
+ * Endpoints:
+ *   GET /home -> index() -> Halaman utama dashboard beranda
+ */
 class HomeController extends Controller
 {
     public function index()

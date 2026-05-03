@@ -7,6 +7,22 @@ use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * TelegramBotService
+ *
+ * Service untuk menangani logika bot Telegram (high-level).
+ * Memproses 9 command (/start, /tugas, /hari_ini, /mendesak, /selesai,
+ * /statistik, /planning, /baru, /help), callback query dari inline keyboard,
+ * serta free-text chat yang diteruskan ke AI Assistant.
+ *
+ * Fitur: Telegram Bot
+ *
+ * Method utama:
+ *  - handleUpdate()        Entry point utama untuk setiap update dari Telegram
+ *  - handleMessage()       Routing pesan teks ke command atau AI chat
+ *  - handleCallbackQuery() Proses aksi dari inline keyboard (selesai, hapus, dll)
+ *  - handleCommand*()      Handler untuk masing-masing command bot
+ */
 class TelegramBotService
 {
     protected TelegramService $telegram;

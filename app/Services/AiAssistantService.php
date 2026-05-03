@@ -9,6 +9,22 @@ use App\Models\AiConversation;
 use App\Models\AiSuggestion;
 use App\Models\Todo;
 
+/**
+ * AiAssistantService
+ *
+ * Service untuk fitur Asisten Pintar berbasis Google Gemini API.
+ * Menangani percakapan chat dengan AI, parsing tugas dari response,
+ * perencanaan harian otomatis, dan saran cerdas untuk pengguna.
+ *
+ * Fitur: Asisten Pintar (AI Assistant)
+ *
+ * Method utama:
+ *  - chat()              Kirim pesan ke AI dan terima balasan beserta preview tugas
+ *  - apiUrl()            Bangun URL endpoint Gemini API
+ *  - parseTasksFromAI()  Ekstrak daftar tugas dari response AI
+ *  - getDailyPlanning()  Buat rencana harian berdasarkan tugas aktif
+ *  - getSuggestions()    Ambil saran AI untuk manajemen tugas
+ */
 class AiAssistantService
 {
     protected string $apiKey;

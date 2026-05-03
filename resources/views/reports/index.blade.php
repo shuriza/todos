@@ -1,3 +1,9 @@
+{{-- 
+    Fitur: Laporan & Analitik
+    Halaman: Dashboard statistik dengan 6 chart dan heatmap
+    Controller: ReportController
+    JS: resources/js/pages/report.js
+--}}
 <x-app-layout>
     <x-slot name="header">
         <div>
