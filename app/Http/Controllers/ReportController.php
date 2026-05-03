@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\ReportExport;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * ReportController
@@ -22,7 +20,6 @@ use Maatwebsite\Excel\Facades\Excel;
  *   GET  /laporan            -> index()      -> Halaman utama laporan
  *   GET  /laporan/chart-data -> chartData()  -> JSON data untuk AJAX (filter periode)
  *   GET  /laporan/export/pdf -> exportPdf()  -> Download file PDF
- *   GET  /laporan/export/excel -> exportExcel() -> Download file Excel
  */
 class ReportController extends Controller
 {
@@ -113,23 +110,6 @@ class ReportController extends Controller
         $filename = 'laporan-produktivitas-' . now()->format('Y-m-d') . '.pdf';
 
         return $pdf->download($filename);
-    }
-
-    /**
-     * Export laporan ke Excel.
-     * Menggunakan Maatwebsite/Excel dengan class ReportExport.
-     */
-    public function exportExcel(Request $request)
-    {
-        $userId = Auth::id();
-        $period = $this->validatePeriod($request->get('period', '30d'));
-
-        $filename = 'laporan-produktivitas-' . now()->format('Y-m-d') . '.xlsx';
-
-        return Excel::download(
-            new ReportExport($this->reportService, $userId, $period),
-            $filename
-        );
     }
 
     // =========================================================================

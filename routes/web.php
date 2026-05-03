@@ -65,7 +65,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::get('/chart-data', [ReportController::class, 'chartData'])->name('chart-data');
         Route::get('/export/pdf', [ReportController::class, 'exportPdf'])->name('export.pdf');
-        Route::get('/export/excel', [ReportController::class, 'exportExcel'])->name('export.excel');
     });
 
     // Arsip Tugas (portofolio tugas selesai)
