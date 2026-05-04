@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
  * 
  * Alur:
  *   Route -> ReportController -> ReportService -> Database
- *                              -> View (Blade) / PDF (DomPDF) / Excel (Maatwebsite)
+ *                              -> View (Blade) / PDF (DomPDF)
  * 
  * Endpoints:
  *   GET  /laporan            -> index()      -> Halaman utama laporan
