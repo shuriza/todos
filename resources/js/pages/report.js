@@ -3,8 +3,8 @@
  * 
  * Alur:
  *   1. init() -> parse data JSON dari server (embedded di Blade via <script type="application/json">)
- *   2. renderAllCharts() -> render semua Chart.js instances + heatmap
- *   3. changePeriod() -> AJAX fetch ke /laporan/chart-data -> update semua chart
+ *   2. renderAllCharts() -> render chart tren utama
+ *   3. changePeriod() -> AJAX fetch ke /laporan/chart-data -> update data dan chart
  * 
  * Dependencies:
  *   - Chart.js (imported via npm)
@@ -12,6 +12,7 @@
  *   - Axios (global, dari bootstrap.js)
  * 
  * Chart instances disimpan di this.charts{} agar bisa di-destroy saat re-render.
+ * Halaman sengaja dibuat ringkas: satu chart utama dan ringkasan angka penting.
  */
 
 import Chart from 'chart.js/auto';
@@ -28,9 +29,6 @@ window.reportApp = function () {
             priority: { high: 0, medium: 0, low: 0 },
             category: {},
             source: { manual: 0, google_classroom: 0 },
-            heatmap: [],
-            streak: { current: 0, longest: 0 },
-            slowest: [],
         },
         charts: {},
 
@@ -112,11 +110,6 @@ window.reportApp = function () {
 
         renderAllCharts() {
             this.renderTrendChart();
-            this.renderKuadranChart();
-            this.renderPriorityChart();
-            this.renderCategoryChart();
-            this.renderSourceChart();
-            this.renderHeatmap();
         },
 
         destroyCharts() {
@@ -461,19 +454,50 @@ window.reportApp = function () {
         // HELPER FUNCTIONS
         // =====================================================================
 
-        formatHours(hours) {
-            if (hours < 1) return Math.round(hours * 60) + ' menit';
-            if (hours < 24) return Math.round(hours * 10) / 10 + ' jam';
-            return Math.round((hours / 24) * 10) / 10 + ' hari';
+        currentPeriodLabel() {
+            return this.periods.find(p => p.value === this.period)?.label || '30 Hari';
+        },
+
+        kuadranSummary() {
+            const k = this.data.kuadran || {};
+            const items = [
+                { label: 'Q1 Lakukan Sekarang', value: k.q1 || 0, color: 'bg-red-500' },
+                { label: 'Q2 Jadwalkan', value: k.q2 || 0, color: 'bg-blue-500' },
+                { label: 'Q3 Delegasikan', value: k.q3 || 0, color: 'bg-yellow-500' },
+                { label: 'Q4 Eliminasi', value: k.q4 || 0, color: 'bg-gray-500' },
+            ];
+            const total = items.reduce((sum, item) => sum + item.value, 0);
+            return items.map(item => ({
+                ...item,
+                percent: total > 0 ? Math.round((item.value / total) * 100) : 0,
+            }));
+        },
+
+        prioritySummary() {
+            const p = this.data.priority || {};
+            return [
+                { label: 'Tinggi', value: p.high || 0, textColor: 'text-red-600' },
+                { label: 'Sedang', value: p.medium || 0, textColor: 'text-yellow-600' },
+                { label: 'Rendah', value: p.low || 0, textColor: 'text-green-600' },
+            ];
+        },
+
+        topCategories() {
+            const cat = this.data.category || {};
+            return Object.entries(cat)
+                .map(([label, value]) => ({ label: this.translateCategory(label), value }))
+                .sort((a, b) => b.value - a.value)
+                .slice(0, 3);
         },
 
         translateCategory(cat) {
             const map = {
                 'kuliah': 'Kuliah',
                 'pekerjaan': 'Pekerjaan',
-                'daily_activity': 'Aktivitas Harian',
+                'daily_activity': 'Daily Activity',
+                '': 'Tanpa Kategori',
             };
-            return map[cat] || cat;
+            return map[cat] || cat || 'Tanpa Kategori';
         },
     };
 };

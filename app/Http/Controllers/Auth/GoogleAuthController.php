@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Database\Seeders\DefaultCategoriesSeeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -86,6 +87,9 @@ class GoogleAuthController extends Controller
                     'google_access_token' => $googleUser->token,
                     'google_refresh_token' => $googleUser->refreshToken,
                 ]);
+
+                // Create default categories for new user
+                DefaultCategoriesSeeder::createForUser($user);
             } else {
                 // Update Google tokens on every login
                 $user->update([

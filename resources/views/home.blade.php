@@ -205,11 +205,8 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                            <select x-model="newTask.category" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="kuliah">Kuliah</option>
-                                <option value="pekerjaan">Pekerjaan</option>
-                                <option value="daily_activity">Aktivitas Harian</option>
-                            </select>
+                            <input type="text" value="Atur kategori dari menu Semua Tugas" disabled
+                                   class="w-full rounded-lg border-gray-200 bg-gray-50 text-gray-500 text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Prioritas</label>

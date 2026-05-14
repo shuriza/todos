@@ -45,21 +45,17 @@ class ReportController extends Controller
         $priority  = $this->reportService->getPriorityDistribution($userId, $period);
         $category  = $this->reportService->getCategoryDistribution($userId, $period);
         $source    = $this->reportService->getSourceDistribution($userId, $period);
-        $heatmap   = $this->reportService->getHeatmapData($userId);
-        $streak    = $this->reportService->getStreakInfo($userId);
-        $slowest   = $this->reportService->getSlowestTasks($userId, $period);
 
         // Data chart dikemas dalam satu object JSON untuk Alpine.js
         $chartData = compact(
             'overview', 'trend', 'kuadran', 'priority',
-            'category', 'source', 'heatmap', 'streak', 'slowest'
+            'category', 'source'
         );
 
         return view('reports.index', [
             'period'    => $period,
             'chartData' => $chartData,
             'overview'  => $overview,
-            'streak'    => $streak,
         ]);
     }
 
@@ -78,13 +74,10 @@ class ReportController extends Controller
         $priority  = $this->reportService->getPriorityDistribution($userId, $period);
         $category  = $this->reportService->getCategoryDistribution($userId, $period);
         $source    = $this->reportService->getSourceDistribution($userId, $period);
-        $heatmap   = $this->reportService->getHeatmapData($userId);
-        $streak    = $this->reportService->getStreakInfo($userId);
-        $slowest   = $this->reportService->getSlowestTasks($userId, $period);
 
         return response()->json(compact(
             'overview', 'trend', 'kuadran', 'priority',
-            'category', 'source', 'heatmap', 'streak', 'slowest'
+            'category', 'source'
         ));
     }
 

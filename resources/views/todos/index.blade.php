@@ -24,7 +24,7 @@
         $canReorder = !$hasActiveFilters && !$hasMultiplePages;
     @endphp
 
-    <div class="p-4 lg:p-6 space-y-5" x-data="todoPageApp({ canReorder: {{ $canReorder ? 'true' : 'false' }} })">
+    <div class="p-4 lg:p-6 space-y-5" x-data='todoPageApp({ canReorder: {{ $canReorder ? 'true' : 'false' }}, categories: @json($categoryOptions ?? []) })'>
 
         {{-- Search & Filter Bar --}}
         <form method="GET" action="{{ route('todos.index') }}" class="bg-white rounded-xl border border-gray-200 p-4">
@@ -54,9 +54,9 @@
 
                     <select name="category" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
                         <option value="all" {{ ($filters['category'] ?? '') === 'all' || empty($filters['category'] ?? '') ? 'selected' : '' }}>Semua Kategori</option>
-                        <option value="kuliah" {{ ($filters['category'] ?? '') === 'kuliah' ? 'selected' : '' }}>Kuliah</option>
-                        <option value="pekerjaan" {{ ($filters['category'] ?? '') === 'pekerjaan' ? 'selected' : '' }}>Pekerjaan</option>
-                        <option value="daily_activity" {{ ($filters['category'] ?? '') === 'daily_activity' ? 'selected' : '' }}>Daily Activity</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->name }}" {{ ($filters['category'] ?? '') === $category->name ? 'selected' : '' }}>{{ $category->name }}</option>
+                        @endforeach
                     </select>
 
                     <select name="sumber" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
@@ -77,6 +77,37 @@
                 </div>
             </div>
         </form>
+
+        {{-- Category Manager --}}
+        <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800">Kategori Tugas</h3>
+                    <p class="text-xs text-gray-500 mt-1">Kelola kategori untuk mengelompokkan tugas.</p>
+                </div>
+
+                <form @submit.prevent="saveCategory" class="flex flex-col sm:flex-row gap-2 lg:min-w-[400px]">
+                    <input type="text" x-model="categoryForm.name" required maxlength="255" placeholder="Nama kategori (contoh: Organisasi)"
+                           class="flex-1 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <button type="submit" :disabled="categorySaving"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+                            x-text="editingCategoryId ? 'Simpan' : 'Tambah'"></button>
+                    <button type="button" x-show="editingCategoryId" @click="resetCategoryForm"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">Batal</button>
+                </form>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+                <template x-for="category in categories" :key="category.id">
+                    <div class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50">
+                        <span class="text-sm font-medium text-gray-800" x-text="category.name"></span>
+                        <button type="button" @click="editCategory(category)" class="text-xs text-indigo-600 hover:text-indigo-800">Edit</button>
+                        <button type="button" @click="deleteCategory(category)" class="text-xs text-red-600 hover:text-red-800">Hapus</button>
+                    </div>
+                </template>
+                <div x-show="categories.length === 0" class="text-sm text-gray-400 py-2">Kategori default: Kuliah, Pekerjaan, Daily Activity.</div>
+            </div>
+        </div>
 
         {{-- Quick Stats --}}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -298,10 +329,11 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
-                            <select x-model="form.category" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option value="kuliah">Kuliah</option>
-                                <option value="pekerjaan">Pekerjaan</option>
-                                <option value="daily_activity">Daily Activity</option>
+                            <select x-model.number="form.category_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                <option value="">Tanpa Kategori</option>
+                                <template x-for="category in categories" :key="category.id">
+                                    <option :value="category.id" x-text="category.name"></option>
+                                </template>
                             </select>
                         </div>
                         <div>

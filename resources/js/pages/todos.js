@@ -16,6 +16,17 @@ window.todoPageApp = function (config = {}) {
         canReorder: config.canReorder ?? false,
         sortableInstance: null,
 
+        // Category state
+        categories: (config.categories ?? []).map((category) => ({
+            ...category,
+            id: Number(category.id),
+        })),
+        categorySaving: false,
+        editingCategoryId: null,
+        categoryForm: {
+            name: '',
+        },
+
         // Modal state
         showAddModal: false,
         showDetailModal: false,
@@ -25,7 +36,7 @@ window.todoPageApp = function (config = {}) {
         form: {
             title: '',
             description: '',
-            category: 'kuliah',
+            category_id: '',
             priority: 'medium',
             due_date: '',
             due_time: '',
@@ -86,7 +97,7 @@ window.todoPageApp = function (config = {}) {
             this.form = {
                 title: '',
                 description: '',
-                category: 'kuliah',
+                category_id: '',
                 priority: 'medium',
                 due_date: '',
                 due_time: '',
@@ -103,7 +114,7 @@ window.todoPageApp = function (config = {}) {
             this.form = {
                 title: task.title,
                 description: task.description || '',
-                category: task.category || 'kuliah',
+                category_id: task.category_id || '',
                 priority: task.priority,
                 due_date: task.due_date ? task.due_date.substring(0, 10) : '',
                 due_time: task.due_time || '',
@@ -112,6 +123,86 @@ window.todoPageApp = function (config = {}) {
         },
 
         // --- API Actions ---
+
+        async saveCategory() {
+            if (this.categorySaving) return;
+            this.categorySaving = true;
+
+            const isEdit = !!this.editingCategoryId;
+            const url = isEdit ? `/categories/${this.editingCategoryId}` : '/categories';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: apiHeaders(),
+                    body: JSON.stringify(this.categoryForm),
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const saved = { ...data.data, id: Number(data.data.id) };
+                    if (isEdit) {
+                        this.categories = this.categories.map((category) => category.id === saved.id ? saved : category);
+                    } else {
+                        this.categories.push(saved);
+                    }
+                    this.resetCategoryForm();
+                    toast(isEdit ? 'Kategori berhasil diperbarui' : 'Kategori berhasil dibuat');
+                } else {
+                    const msg = data.message
+                        || Object.values(data.errors || {}).flat().join(', ')
+                        || 'Gagal menyimpan kategori';
+                    toast(msg, 'error');
+                }
+            } catch {
+                toast('Gagal menyimpan kategori', 'error');
+            } finally {
+                this.categorySaving = false;
+            }
+        },
+
+        editCategory(category) {
+            this.editingCategoryId = category.id;
+            this.categoryForm = {
+                name: category.name || '',
+            };
+        },
+
+        async deleteCategory(category) {
+            if (!confirm(`Hapus kategori "${category.name}"? Tugas yang memakai kategori ini akan menjadi tanpa kategori.`)) return;
+
+            try {
+                const res = await fetch(`/categories/${category.id}`, {
+                    method: 'DELETE',
+                    headers: apiHeaders(false),
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    this.categories = this.categories.filter((item) => item.id !== category.id);
+                    if (this.form.category_id === category.id) {
+                        this.form.category_id = '';
+                    }
+                    if (this.editingCategoryId === category.id) {
+                        this.resetCategoryForm();
+                    }
+                    toast('Kategori berhasil dihapus');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    toast(data.message || 'Gagal menghapus kategori', 'error');
+                }
+            } catch {
+                toast('Gagal menghapus kategori', 'error');
+            }
+        },
+
+        resetCategoryForm() {
+            this.editingCategoryId = null;
+            this.categoryForm = {
+                name: '',
+            };
+        },
 
         async saveTodo() {
             if (this.saving) return;

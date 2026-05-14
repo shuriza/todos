@@ -13,6 +13,7 @@ use App\Services\ArchiveService;
 use App\Services\ReportService;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -93,7 +94,14 @@ class TodoController extends Controller
 
         $filters = $request->only(['search', 'status', 'category', 'kuadran', 'sumber']);
 
-        return view('todos.index', compact('todos', 'categories', 'courses', 'stats', 'filters'));
+        $categoryOptions = $categories->map(fn (Category $category) => [
+            'id' => $category->id,
+            'name' => $category->name,
+            'color' => $category->color ?? '#6366f1',
+            'icon' => $category->icon ?? '',
+        ])->values();
+
+        return view('todos.index', compact('todos', 'categories', 'categoryOptions', 'courses', 'stats', 'filters'));
     }
 
     /**
@@ -105,6 +113,8 @@ class TodoController extends Controller
         $this->authorize('create', Todo::class);
 
         $validated = $request->validated();
+
+        $validated = $this->normalizeCategoryPayload($validated, Auth::id());
 
         $kuadran = Todo::hitungKuadran(
             $validated['priority'] ?? 'medium',
@@ -136,6 +146,8 @@ class TodoController extends Controller
         $this->authorize('update', $todo);
 
         $validated = $request->validated();
+
+        $validated = $this->normalizeCategoryPayload($validated, Auth::id());
 
         if (isset($validated['status']) && $validated['status'] === 'completed' && $todo->status !== 'completed') {
             $validated['completed_at'] = now();
@@ -267,5 +279,22 @@ class TodoController extends Controller
         AiAssistantService::forgetTaskContextCache($userId);
         ReportService::forgetReportCache($userId);
         ArchiveService::forgetArchiveCache($userId);
+    }
+
+    protected function normalizeCategoryPayload(array $validated, int $userId): array
+    {
+        if (!array_key_exists('category_id', $validated) || !$validated['category_id']) {
+            return $validated;
+        }
+
+        $category = Category::where('user_id', $userId)->find($validated['category_id']);
+
+        if (!$category) {
+            return Arr::except($validated, ['category_id']);
+        }
+
+        $validated['category'] = $category->name;
+
+        return $validated;
     }
 }

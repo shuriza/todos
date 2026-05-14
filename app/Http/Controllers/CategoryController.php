@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Models\Category;
+use App\Services\AiAssistantService;
+use App\Services\ArchiveService;
+use App\Services\ReportService;
 use App\Support\ApiResponse;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,6 +38,8 @@ class CategoryController extends Controller
             'order'   => (int) Category::where('user_id', Auth::id())->max('order') + 1,
         ]);
 
+        $this->forgetCategoryCaches(Auth::id());
+
         return ApiResponse::created($category, 'Kategori berhasil dibuat');
     }
 
@@ -44,6 +49,8 @@ class CategoryController extends Controller
 
         $category->update($request->validated());
 
+        $this->forgetCategoryCaches(Auth::id());
+
         return ApiResponse::ok($category, 'Kategori berhasil diperbarui');
     }
 
@@ -51,8 +58,25 @@ class CategoryController extends Controller
     {
         $this->authorize('delete', $category);
 
+        $category->todos()->update([
+            'category_id' => null,
+            'category' => null,
+        ]);
+
         $category->delete();
 
+        $this->forgetCategoryCaches(Auth::id());
+
         return ApiResponse::ok(null, 'Kategori berhasil dihapus');
+    }
+
+    protected function forgetCategoryCaches(int $userId): void
+    {
+        cache()->forget("user:{$userId}:todo_stats:basic");
+        cache()->forget("user:{$userId}:todo_stats:full");
+        cache()->forget("user:{$userId}:home_dashboard");
+        AiAssistantService::forgetTaskContextCache($userId);
+        ReportService::forgetReportCache($userId);
+        ArchiveService::forgetArchiveCache($userId);
     }
 }

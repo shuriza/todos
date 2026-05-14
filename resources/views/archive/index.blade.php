@@ -231,22 +231,7 @@
                                             {{ $priorityLabel }}
                                         </span>
 
-                                        @if ($task->created_at && $task->completed_at)
-                                            @php
-                                                $minutes = abs($task->created_at->diffInMinutes($task->completed_at));
-                                                if ($minutes < 60) {
-                                                    $duration = $minutes . ' menit';
-                                                } elseif ($minutes < 1440) {
-                                                    $duration = round($minutes / 60, 1) . ' jam';
-                                                } else {
-                                                    $duration = round($minutes / 1440, 1) . ' hari';
-                                                }
-                                            @endphp
-                                            <span class="inline-flex items-center gap-1 text-xs text-gray-500">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                                {{ $duration }}
-                                            </span>
-                                        @endif
+
                                     </div>
                                 </div>
                             </div>

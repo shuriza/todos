@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Todo;
-use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
 /**
@@ -20,7 +19,7 @@ use Carbon\CarbonPeriod;
  * Period dikonversi ke date range via parsePeriod().
  * Hasil di-cache sesuai config('todos.stats_cache_ttl').
  * 
- * CATATAN: Semua query menggunakan fungsi MySQL (CURDATE(), TIMESTAMPDIFF(), DATE_FORMAT())
+ * CATATAN: Semua query menggunakan fungsi MySQL (CURDATE(), WEEK(), DATE_FORMAT())
  *          karena project ini menggunakan MySQL sebagai database.
  */
 class ReportService
@@ -314,100 +313,6 @@ class ReportService
     }
 
     // =========================================================================
-    // STREAK INFO
-    // =========================================================================
-
-    /**
-     * Hitung streak: hari berturut-turut user menyelesaikan minimal 1 task.
-     */
-    public function getStreakInfo(int $userId): array
-    {
-        return $this->cached("report:streak", $userId, function () use ($userId) {
-            $dates = Todo::where('user_id', $userId)
-                ->where('status', 'completed')
-                ->whereNotNull('completed_at')
-                ->selectRaw("DISTINCT DATE(completed_at) AS d")
-                ->orderBy('d', 'desc')
-                ->pluck('d')
-                ->map(fn($d) => Carbon::parse($d))
-                ->values();
-
-            if ($dates->isEmpty()) {
-                return ['current' => 0, 'longest' => 0];
-            }
-
-            // Current streak (dari hari ini mundur)
-            $currentStreak = 0;
-            $checkDate = today();
-
-            if (!$dates->contains(fn($d) => $d->isSameDay($checkDate))) {
-                $checkDate = today()->subDay();
-            }
-
-            foreach ($dates as $date) {
-                if ($date->isSameDay($checkDate)) {
-                    $currentStreak++;
-                    $checkDate = $checkDate->subDay();
-                } elseif ($date->lt($checkDate)) {
-                    break;
-                }
-            }
-
-            // Longest streak
-            $longestStreak = 0;
-            $tempStreak = 1;
-            $sortedDates = $dates->sortBy(fn($d) => $d->timestamp)->values();
-
-            for ($i = 1; $i < $sortedDates->count(); $i++) {
-                if ($sortedDates[$i]->diffInDays($sortedDates[$i - 1]) === 1) {
-                    $tempStreak++;
-                } else {
-                    $longestStreak = max($longestStreak, $tempStreak);
-                    $tempStreak = 1;
-                }
-            }
-            $longestStreak = max($longestStreak, $tempStreak);
-
-            return [
-                'current' => $currentStreak,
-                'longest' => $longestStreak,
-            ];
-        });
-    }
-
-    // =========================================================================
-    // TASK TERLAMA DISELESAIKAN (Tabel)
-    // =========================================================================
-
-    /**
-     * Top N task dengan waktu penyelesaian terlama.
-     */
-    public function getSlowestTasks(int $userId, string $period = '30d', int $limit = 10): array
-    {
-        [$start, $end] = $this->parsePeriod($period);
-
-        return $this->cached("report:slowest:{$period}", $userId, function () use ($userId, $start, $end, $limit) {
-            return Todo::where('user_id', $userId)
-                ->where('status', 'completed')
-                ->whereNotNull('completed_at')
-                ->whereBetween('completed_at', [$start, $end])
-                ->selectRaw("title, priority, category, created_at, completed_at, TIMESTAMPDIFF(SECOND, created_at, completed_at) / 3600 AS hours")
-                ->orderByDesc('hours')
-                ->limit($limit)
-                ->get()
-                ->map(fn($row) => [
-                    'title'        => $row->title,
-                    'priority'     => $row->priority,
-                    'category'     => $row->category,
-                    'created_at'   => Carbon::parse($row->created_at)->format('d M Y'),
-                    'completed_at' => Carbon::parse($row->completed_at)->format('d M Y'),
-                    'hours'        => round((float) $row->hours, 1),
-                ])
-                ->toArray();
-        });
-    }
-
-    // =========================================================================
     // DATA UNTUK EXPORT PDF
     // =========================================================================
 
@@ -422,8 +327,6 @@ class ReportService
             'priority'  => $this->getPriorityDistribution($userId, $period),
             'category'  => $this->getCategoryDistribution($userId, $period),
             'source'    => $this->getSourceDistribution($userId, $period),
-            'streak'    => $this->getStreakInfo($userId),
-            'slowest'   => $this->getSlowestTasks($userId, $period),
         ];
     }
 
@@ -438,7 +341,7 @@ class ReportService
     public static function forgetReportCache(int $userId): void
     {
         $periods = ['7d', '30d', '90d', '180d', '365d'];
-        $keys = ['overview', 'trend', 'kuadran', 'priority', 'category', 'source', 'slowest'];
+        $keys = ['overview', 'trend', 'kuadran', 'priority', 'category', 'source'];
 
         foreach ($periods as $period) {
             foreach ($keys as $key) {
@@ -447,7 +350,6 @@ class ReportService
         }
 
         cache()->forget("user:{$userId}:report:heatmap");
-        cache()->forget("user:{$userId}:report:streak");
     }
 
     // =========================================================================

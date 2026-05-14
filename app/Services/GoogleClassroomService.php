@@ -397,6 +397,10 @@ class GoogleClassroomService
                     $data['completed_at'] = now();
                 }
 
+                if ($existingTodo->status === 'completed' && !$existingTodo->completed_at) {
+                    $data['completed_at'] = now();
+                }
+
                 // Check if anything actually changed
                 $hasChanges = false;
                 foreach ($data as $key => $value) {

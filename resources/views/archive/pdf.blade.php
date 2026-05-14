@@ -41,7 +41,6 @@
         .col-title { font-weight: 600; color: #111827; }
         .col-title .desc { font-weight: 400; font-size: 9px; color: #6b7280; margin-top: 2px; }
         .col-date { width: 85px; color: #374151; }
-        .col-duration { width: 70px; color: #6b7280; }
         .col-priority { width: 60px; }
 
         .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 600; }
@@ -133,27 +132,12 @@
                             <th class="col-no">No</th>
                             <th>Judul Tugas</th>
                             <th class="col-date">Diselesaikan</th>
-                            <th class="col-duration">Durasi</th>
                             <th class="col-priority">Prioritas</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($tasks as $i => $task)
                             @php
-                                $minutes = $task->created_at && $task->completed_at
-                                    ? abs($task->created_at->diffInMinutes($task->completed_at))
-                                    : null;
-                                if ($minutes !== null) {
-                                    if ($minutes < 60) {
-                                        $duration = $minutes . ' menit';
-                                    } elseif ($minutes < 1440) {
-                                        $duration = round($minutes / 60, 1) . ' jam';
-                                    } else {
-                                        $duration = round($minutes / 1440, 1) . ' hari';
-                                    }
-                                } else {
-                                    $duration = '-';
-                                }
                                 $priorityBadge = [
                                     'high'   => ['badge-high', 'Tinggi'],
                                     'medium' => ['badge-medium', 'Sedang'],
@@ -169,7 +153,6 @@
                                     @endif
                                 </td>
                                 <td class="col-date">{{ $task->completed_at?->translatedFormat('d M Y') }}</td>
-                                <td class="col-duration">{{ $duration }}</td>
                                 <td class="col-priority">
                                     <span class="badge {{ $priorityBadge[0] }}">{{ $priorityBadge[1] }}</span>
                                 </td>

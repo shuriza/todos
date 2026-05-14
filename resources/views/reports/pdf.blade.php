@@ -79,14 +79,7 @@
                 <td class="label">Tingkat Ketepatan Waktu</td>
                 <td class="value">{{ $overview['on_time_rate'] !== null ? $overview['on_time_rate'] . '%' : '-' }}</td>
             </tr>
-            <tr>
-                <td class="label">Streak Saat Ini</td>
-                <td class="value">{{ $streak['current'] }} hari</td>
-            </tr>
-            <tr>
-                <td class="label">Streak Terpanjang</td>
-                <td class="value">{{ $streak['longest'] }} hari</td>
-            </tr>
+
         </table>
     </div>
 
@@ -149,51 +142,6 @@
             </td>
         </tr>
     </table>
-
-    {{-- Tabel Task Terlama --}}
-    @if(count($slowest) > 0)
-    <div class="section">
-        <div class="section-title">Tugas Terlama Diselesaikan</div>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Judul</th>
-                    <th>Prioritas</th>
-                    <th>Kategori</th>
-                    <th>Dibuat</th>
-                    <th>Selesai</th>
-                    <th>Durasi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($slowest as $idx => $task)
-                <tr>
-                    <td>{{ $idx + 1 }}</td>
-                    <td>{{ \Illuminate\Support\Str::limit($task['title'], 40) }}</td>
-                    <td>
-                        <span class="badge {{ $task['priority'] === 'high' ? 'badge-high' : ($task['priority'] === 'medium' ? 'badge-medium' : 'badge-low') }}">
-                            {{ $task['priority'] === 'high' ? 'Tinggi' : ($task['priority'] === 'medium' ? 'Sedang' : 'Rendah') }}
-                        </span>
-                    </td>
-                    <td>{{ $task['category'] === 'kuliah' ? 'Kuliah' : ($task['category'] === 'pekerjaan' ? 'Pekerjaan' : 'Aktivitas Harian') }}</td>
-                    <td>{{ $task['created_at'] }}</td>
-                    <td>{{ $task['completed_at'] }}</td>
-                    <td style="font-weight: 700;">
-                        @if($task['hours'] < 1)
-                            {{ round($task['hours'] * 60) }} menit
-                        @elseif($task['hours'] < 24)
-                            {{ round($task['hours'], 1) }} jam
-                        @else
-                            {{ round($task['hours'] / 24, 1) }} hari
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    @endif
 
     {{-- Footer --}}
     <div class="footer">
