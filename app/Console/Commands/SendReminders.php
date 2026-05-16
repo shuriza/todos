@@ -277,14 +277,15 @@ class SendReminders extends Command
             return [0, 0];
         }
 
-        // Check if it's the right time to send (within 30min window of preferred time)
+        // Kirim hanya setelah jam pilihan, dengan window 30 menit.
+        // Contoh jadwal 07:00: valid 07:00 sampai 07:30, bukan 06:30.
         $preferredTime = $user->getNotifPref('daily_summary_time', '07:00');
         $preferredHour = (int) explode(':', $preferredTime)[0];
         $preferredMinute = (int) (explode(':', $preferredTime)[1] ?? 0);
         $preferredMoment = now()->copy()->setTime($preferredHour, $preferredMinute);
-        $minutesDiff = abs(now()->diffInMinutes($preferredMoment, false));
+        $minutesAfterPreferred = $preferredMoment->diffInMinutes(now(), false);
 
-        if ($minutesDiff > 30) {
+        if ($minutesAfterPreferred < 0 || $minutesAfterPreferred > 30) {
             $this->line("   Daily summary: belum waktunya (jadwal: {$preferredTime})");
             return [0, 0];
         }

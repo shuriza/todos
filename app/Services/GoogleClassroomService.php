@@ -404,7 +404,7 @@ class GoogleClassroomService
                 // Check if anything actually changed
                 $hasChanges = false;
                 foreach ($data as $key => $value) {
-                    if ($existingTodo->getAttribute($key) != $value) {
+                    if ($this->hasTodoAttributeChanged($existingTodo, $key, $value)) {
                         $hasChanges = true;
                         break;
                     }
@@ -430,6 +430,25 @@ class GoogleClassroomService
             'skipped' => $skipped,
             'updated' => $updated,
         ];
+    }
+
+    /**
+     * Check whether a synced Classroom value is materially different from the local todo value.
+     */
+    protected function hasTodoAttributeChanged(Todo $todo, string $key, mixed $value): bool
+    {
+        $current = $todo->getAttribute($key);
+
+        if ($key === 'due_date') {
+            $current = $todo->due_date?->format('Y-m-d');
+        }
+
+        if ($key === 'due_time') {
+            $current = $current ? substr((string) $current, 0, 5) : null;
+            $value = $value ? substr((string) $value, 0, 5) : null;
+        }
+
+        return $current != $value;
     }
 
     /**

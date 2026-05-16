@@ -91,7 +91,7 @@
                            class="flex-1 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <button type="submit" :disabled="categorySaving"
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-60 transition-colors"
-                            x-text="editingCategoryId ? 'Simpan' : 'Tambah'"></button>
+                            x-text="categorySaving ? 'Menyimpan...' : (editingCategoryId ? 'Simpan' : 'Simpan Kategori')"></button>
                     <button type="button" x-show="editingCategoryId" @click="resetCategoryForm"
                             class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">Batal</button>
                 </form>

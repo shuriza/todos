@@ -63,12 +63,14 @@ class ProfileTest extends TestCase
 
     public function test_user_can_delete_their_account(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'google_id' => 'google-123',
+        ]);
 
         $response = $this
             ->actingAs($user)
             ->delete('/profile', [
-                'password' => 'password',
+                'confirm_email' => $user->email,
             ]);
 
         $response
@@ -79,19 +81,21 @@ class ProfileTest extends TestCase
         $this->assertNull($user->fresh());
     }
 
-    public function test_correct_password_must_be_provided_to_delete_account(): void
+    public function test_correct_email_must_be_provided_to_delete_account(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'google_id' => 'google-123',
+        ]);
 
         $response = $this
             ->actingAs($user)
             ->from('/profile')
             ->delete('/profile', [
-                'password' => 'wrong-password',
+                'confirm_email' => 'wrong@example.com',
             ]);
 
         $response
-            ->assertSessionHasErrorsIn('userDeletion', 'password')
+            ->assertSessionHasErrorsIn('userDeletion', 'confirm_email')
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());

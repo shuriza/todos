@@ -177,6 +177,15 @@ window.telegramSettings = function () {
         },
 
         // --- Helpers ---
+        notificationTitle(item) {
+            if (item.todo?.title) return item.todo.title;
+
+            const message = (item.pesan || '').replace(/<[^>]*>/g, '').trim();
+            const firstLine = message.split('\n').find(line => line.trim())?.trim();
+
+            return firstLine || 'Notifikasi Telegram';
+        },
+
         formatDate(dateStr) {
             return formatDateTime(dateStr);
         },

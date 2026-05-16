@@ -8,63 +8,46 @@ use Illuminate\Database\Seeder;
 
 class DefaultCategoriesSeeder extends Seeder
 {
+    public const DEFAULT_CATEGORIES = [
+        ['name' => 'Kuliah', 'order' => 1],
+        ['name' => 'Pekerjaan', 'order' => 2],
+        ['name' => 'Daily Activity', 'order' => 3],
+    ];
+
     /**
-     * Seed default categories for all users who don't have any categories yet.
+     * Seed default categories for all users who don't have the defaults yet.
      */
     public function run(): void
     {
-        $defaultCategories = [
-            ['name' => 'Kuliah', 'order' => 1],
-            ['name' => 'Pekerjaan', 'order' => 2],
-            ['name' => 'Daily Activity', 'order' => 3],
-        ];
-
         $users = User::all();
         $createdCount = 0;
 
         foreach ($users as $user) {
-            // Skip if user already has categories
-            if ($user->categories()->exists()) {
-                continue;
-            }
-
-            // Create default categories for this user
-            foreach ($defaultCategories as $categoryData) {
-                Category::create([
-                    'user_id' => $user->id,
-                    'name' => $categoryData['name'],
-                    'color' => '#6366f1', // Default blue
-                    'icon' => null,
-                    'order' => $categoryData['order'],
-                ]);
-            }
-
-            $createdCount++;
+            $createdCount += self::createForUser($user);
         }
 
-        echo "\n✅ Default categories created for {$createdCount} user(s)!\n";
+        echo "\n✅ Default categories created: {$createdCount}\n";
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
         echo "📁 Categories: Kuliah, Pekerjaan, Daily Activity\n";
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
     }
 
     /**
-     * Create default categories for a specific user.
+     * Create missing default categories for a specific user.
      */
-    public static function createForUser(User $user): void
+    public static function createForUser(User $user): int
     {
-        // Skip if user already has categories
-        if ($user->categories()->exists()) {
-            return;
-        }
+        $createdCount = 0;
 
-        $defaultCategories = [
-            ['name' => 'Kuliah', 'order' => 1],
-            ['name' => 'Pekerjaan', 'order' => 2],
-            ['name' => 'Daily Activity', 'order' => 3],
-        ];
+        foreach (self::DEFAULT_CATEGORIES as $categoryData) {
+            $exists = $user->categories()
+                ->where('name', $categoryData['name'])
+                ->exists();
 
-        foreach ($defaultCategories as $categoryData) {
+            if ($exists) {
+                continue;
+            }
+
             Category::create([
                 'user_id' => $user->id,
                 'name' => $categoryData['name'],
@@ -72,6 +55,10 @@ class DefaultCategoriesSeeder extends Seeder
                 'icon' => null,
                 'order' => $categoryData['order'],
             ]);
+
+            $createdCount++;
         }
+
+        return $createdCount;
     }
 }

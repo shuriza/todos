@@ -20,37 +20,19 @@
 
             <p class="mt-1 text-sm text-gray-600">
                 Setelah akun dihapus, semua data akan dihapus secara permanen.
-                @if(empty(Auth::user()->google_id))
-                    Masukkan password untuk mengonfirmasi.
-                @else
-                    Ketik alamat email kamu (<strong>{{ Auth::user()->email }}</strong>) untuk mengonfirmasi.
-                @endif
+                Ketik alamat email kamu (<strong>{{ Auth::user()->email }}</strong>) untuk mengonfirmasi.
             </p>
 
             <div class="mt-6">
-                @if(empty(Auth::user()->google_id))
-                    {{-- User dengan password --}}
-                    <x-input-label for="password" value="Password" class="sr-only" />
-                    <x-text-input
-                        id="password"
-                        name="password"
-                        type="password"
-                        class="mt-1 block w-3/4"
-                        placeholder="Password"
-                    />
-                    <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
-                @else
-                    {{-- Google-only user: konfirmasi dengan email --}}
-                    <x-input-label for="confirm_email" value="Email" class="sr-only" />
-                    <x-text-input
-                        id="confirm_email"
-                        name="confirm_email"
-                        type="email"
-                        class="mt-1 block w-3/4"
-                        placeholder="{{ Auth::user()->email }}"
-                    />
-                    <x-input-error :messages="$errors->userDeletion->get('confirm_email')" class="mt-2" />
-                @endif
+                <x-input-label for="confirm_email" value="Email" class="sr-only" />
+                <x-text-input
+                    id="confirm_email"
+                    name="confirm_email"
+                    type="email"
+                    class="mt-1 block w-3/4"
+                    placeholder="{{ Auth::user()->email }}"
+                />
+                <x-input-error :messages="$errors->userDeletion->get('confirm_email')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">

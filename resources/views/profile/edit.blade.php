@@ -8,7 +8,7 @@
     <x-slot name="header">
         <div>
             <h2 class="text-xl font-bold text-gray-800">Profil & Pengaturan</h2>
-            <p class="text-sm text-gray-500">Kelola informasi akun, integrasi, dan preferensi notifikasi</p>
+            <p class="text-sm text-gray-500">Atur data akun, koneksi Classroom, dan notifikasi Telegram.</p>
         </div>
     </x-slot>
 
@@ -29,6 +29,7 @@
                     </div>
                 </div>
                 <div class="pt-14 px-6 pb-6">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Akun Mahasiswa</p>
                     <h3 class="text-xl font-bold text-gray-900">{{ $user->name }}</h3>
                     <p class="text-sm text-gray-500">{{ $user->email }}</p>
                     <div class="flex items-center gap-3 mt-2 flex-wrap">
@@ -111,8 +112,8 @@
 
             {{-- Integrations --}}
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-1">Integrasi</h3>
-                <p class="text-sm text-gray-500 mb-5">Hubungkan akun dengan layanan eksternal</p>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Integrasi Aplikasi</h3>
+                <p class="text-sm text-gray-500 mb-5">Cek koneksi Google Classroom dan Telegram dari satu tempat.</p>
 
                 <div class="space-y-4">
                     {{-- Google Classroom --}}
@@ -148,15 +149,43 @@
                             </a>
                         @endif
                     </div>
+
+                    {{-- Telegram --}}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-50 rounded-xl border border-blue-100 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900 text-sm">Telegram</p>
+                                @if($user->hasTelegram())
+                                    <p class="text-xs text-green-600">Terhubung untuk notifikasi</p>
+                                @else
+                                    <p class="text-xs text-gray-500">Belum terhubung</p>
+                                @endif
+                            </div>
+                        </div>
+                        <a href="#telegram-settings" class="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                            Atur
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            {{-- Sinkronisasi & Otomasi --}}
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-1">Sinkronisasi & Otomasi</h3>
-                <p class="text-sm text-gray-500 mb-5">Proses otomatis yang berjalan di latar belakang</p>
+            {{-- Detail Tambahan --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6" x-data="{ showAutomation: false }">
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Detail Tambahan</h3>
+                <p class="text-sm text-gray-500 mb-5">Jadwal otomatis dan riwayat bisa dibuka saat diperlukan.</p>
 
-                <div class="space-y-3">
+                <button type="button" @click="showAutomation = !showAutomation" class="w-full flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-left hover:bg-gray-100 transition-colors">
+                    <span>
+                        <span class="block text-sm font-semibold text-gray-900">Sinkronisasi & Otomasi</span>
+                        <span class="block text-xs text-gray-500 mt-0.5">Lihat jadwal proses otomatis di server production.</span>
+                    </span>
+                    <span class="text-xs font-semibold text-indigo-600 whitespace-nowrap" x-text="showAutomation ? 'Sembunyikan' : 'Lihat detail'"></span>
+                </button>
+
+                <div x-show="showAutomation" x-transition class="mt-3 space-y-3">
                     {{-- Classroom Sync --}}
                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                         <div class="flex items-center gap-3">
@@ -165,7 +194,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">Sinkronisasi Classroom</p>
-                                <p class="text-xs text-gray-500">Mengambil tugas baru dari Google Classroom</p>
+                                <p class="text-xs text-gray-500">Mengambil mata kuliah dan tugas baru dari Google Classroom.</p>
                             </div>
                         </div>
                         <span class="text-xs text-gray-500 bg-white px-2.5 py-1 rounded border border-gray-200">Setiap 6 jam</span>
@@ -179,7 +208,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">Kuadran Eisenhower</p>
-                                <p class="text-xs text-gray-500">Re-kalkulasi kuadran berdasarkan waktu saat ini</p>
+                                <p class="text-xs text-gray-500">Memperbarui kuadran tugas aktif berdasarkan prioritas dan deadline.</p>
                             </div>
                         </div>
                         <span class="text-xs text-gray-500 bg-white px-2.5 py-1 rounded border border-gray-200">Setiap 1 jam</span>
@@ -193,7 +222,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">Pengingat Deadline</p>
-                                <p class="text-xs text-gray-500">Cek tugas mendekati tenggat dan kirim notifikasi Telegram</p>
+                                <p class="text-xs text-gray-500">Mengecek tugas mendekati deadline dan mengirim Telegram jika notifikasi aktif.</p>
                             </div>
                         </div>
                         <span class="text-xs text-gray-500 bg-white px-2.5 py-1 rounded border border-gray-200">Setiap 1 menit</span>
@@ -207,7 +236,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">Peringatan Terlambat</p>
-                                <p class="text-xs text-gray-500">Ingatkan tugas yang sudah melewati tenggat</p>
+                                <p class="text-xs text-gray-500">Mengingatkan tugas yang sudah lewat deadline dengan jeda sesuai preferensi.</p>
                             </div>
                         </div>
                         <span class="text-xs text-gray-500 bg-white px-2.5 py-1 rounded border border-gray-200">Setiap 1 menit</span>
@@ -221,18 +250,17 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-900">Rangkuman Harian</p>
-                                <p class="text-xs text-gray-500">Kirim ringkasan tugas setiap pagi sesuai jadwal yang kamu atur</p>
+                                <p class="text-xs text-gray-500">Mengirim ringkasan tugas harian jika fitur ini diaktifkan.</p>
                             </div>
                         </div>
-                        <span class="text-xs text-gray-500 bg-white px-2.5 py-1 rounded border border-gray-200">Sesuai preferensi</span>
+                        <span class="text-xs text-gray-500 bg-white px-2.5 py-1 rounded border border-gray-200">Sesuai jam pilihan</span>
                     </div>
+                    <p class="text-xs text-gray-400 mt-4">Di mode local, proses otomatis tidak dijalankan agar tidak bentrok dengan server production. Pengaturan notifikasi dapat diubah di bagian Telegram di bawah.</p>
                 </div>
-
-                <p class="text-xs text-gray-400 mt-4">Semua proses berjalan otomatis di server. Pengaturan notifikasi dapat diubah di bagian Telegram di bawah.</p>
             </div>
 
             {{-- Telegram Integration (Full Setup) --}}
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" x-data="telegramSettings()">
+            <div id="telegram-settings" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" x-data="telegramSettings()">
 
                 {{-- Header --}}
                 <div class="p-6 border-b border-gray-100">
@@ -243,7 +271,7 @@
                             </div>
                             <div>
                                 <h3 class="text-lg font-bold text-gray-900">Telegram Notifikasi</h3>
-                                <p class="text-sm text-gray-500">Terima pengingat tugas langsung di Telegram</p>
+                                <p class="text-sm text-gray-500">Atur Chat ID, jenis notifikasi, dan waktu pengiriman.</p>
                             </div>
                         </div>
                         <div>
@@ -271,6 +299,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Cara Menghubungkan Telegram
                         </h4>
+                        <p class="text-xs text-blue-700 mb-3">Ikuti langkah ini hanya jika akun Telegram belum terhubung.</p>
                         <div class="space-y-3">
                             <div class="flex items-start gap-3">
                                 <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center mt-0.5">1</span>
@@ -507,60 +536,68 @@
                     </div>
 
                     {{-- Notification History (Quick Stats) --}}
-                    <div class="border-t border-gray-100 pt-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <h4 class="font-semibold text-gray-900">Riwayat Notifikasi</h4>
-                            <button @click="loadHistory()" class="text-xs text-blue-600 hover:text-blue-700 font-medium">Muat Ulang</button>
-                        </div>
-
-                        {{-- Stats Row --}}
-                        <div class="grid grid-cols-3 gap-3 mb-4">
-                            <div class="bg-green-50 rounded-lg p-3 text-center border border-green-100">
-                                <p class="text-lg font-bold text-green-700" x-text="stats.sent">0</p>
-                                <p class="text-xs text-green-600">Terkirim</p>
+                    <div class="border-t border-gray-100 pt-6" x-data="{ showHistory: false }">
+                        <div class="flex items-center justify-between gap-3 mb-3">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Riwayat Notifikasi</h4>
+                                <p class="text-sm text-gray-500">Buka hanya jika ingin mengecek pesan terakhir.</p>
                             </div>
-                            <div class="bg-red-50 rounded-lg p-3 text-center border border-red-100">
-                                <p class="text-lg font-bold text-red-700" x-text="stats.failed">0</p>
-                                <p class="text-xs text-red-600">Gagal</p>
-                            </div>
-                            <div class="bg-blue-50 rounded-lg p-3 text-center border border-blue-100">
-                                <p class="text-lg font-bold text-blue-700" x-text="stats.today">0</p>
-                                <p class="text-xs text-blue-600">Hari Ini</p>
+                            <div class="flex items-center gap-3">
+                                <button x-show="showHistory" x-transition @click="loadHistory()" class="text-xs text-blue-600 hover:text-blue-700 font-medium">Muat Ulang</button>
+                                <button type="button" @click="showHistory = !showHistory" class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold" x-text="showHistory ? 'Sembunyikan' : 'Lihat riwayat'"></button>
                             </div>
                         </div>
 
-                        {{-- Recent History --}}
-                        <div class="space-y-2 max-h-64 overflow-y-auto" x-show="historyItems.length > 0" x-transition>
-                            <template x-for="item in historyItems" :key="item.id">
-                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                    <div class="flex-shrink-0">
-                                        <template x-if="item.status_kirim === 'sent'">
-                                            <span class="w-2 h-2 rounded-full bg-green-500 block"></span>
-                                        </template>
-                                        <template x-if="item.status_kirim === 'failed'">
-                                            <span class="w-2 h-2 rounded-full bg-red-500 block"></span>
-                                        </template>
-                                        <template x-if="item.status_kirim === 'pending'">
-                                            <span class="w-2 h-2 rounded-full bg-yellow-500 block"></span>
-                                        </template>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm text-gray-900 truncate" x-text="item.todo ? item.todo.title : 'Rangkuman Harian'"></p>
-                                        <p class="text-xs text-gray-500" x-text="formatDate(item.created_at)"></p>
-                                    </div>
-                                    <span class="text-xs px-2 py-0.5 rounded-full whitespace-nowrap" 
-                                          :class="{
-                                              'bg-green-100 text-green-700': item.status_kirim === 'sent',
-                                              'bg-red-100 text-red-700': item.status_kirim === 'failed',
-                                              'bg-yellow-100 text-yellow-700': item.status_kirim === 'pending'
-                                          }"
-                                          x-text="item.status_kirim === 'sent' ? 'Terkirim' : (item.status_kirim === 'failed' ? 'Gagal' : 'Pending')"></span>
+                        <div x-show="showHistory" x-transition>
+                            {{-- Stats Row --}}
+                            <div class="grid grid-cols-3 gap-3 mb-4">
+                                <div class="bg-green-50 rounded-lg p-3 text-center border border-green-100">
+                                    <p class="text-lg font-bold text-green-700" x-text="stats.sent">0</p>
+                                    <p class="text-xs text-green-600">Terkirim</p>
                                 </div>
-                            </template>
-                        </div>
-                        <div x-show="historyItems.length === 0 && !loadingHistory" class="text-center py-6">
-                            <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                            <p class="text-sm text-gray-400">Belum ada riwayat notifikasi</p>
+                                <div class="bg-red-50 rounded-lg p-3 text-center border border-red-100">
+                                    <p class="text-lg font-bold text-red-700" x-text="stats.failed">0</p>
+                                    <p class="text-xs text-red-600">Gagal</p>
+                                </div>
+                                <div class="bg-blue-50 rounded-lg p-3 text-center border border-blue-100">
+                                    <p class="text-lg font-bold text-blue-700" x-text="stats.today">0</p>
+                                    <p class="text-xs text-blue-600">Hari Ini</p>
+                                </div>
+                            </div>
+
+                            {{-- Recent History --}}
+                            <div class="space-y-2 max-h-64 overflow-y-auto" x-show="historyItems.length > 0" x-transition>
+                                <template x-for="item in historyItems" :key="item.id">
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                        <div class="flex-shrink-0">
+                                            <template x-if="item.status_kirim === 'sent'">
+                                                <span class="w-2 h-2 rounded-full bg-green-500 block"></span>
+                                            </template>
+                                            <template x-if="item.status_kirim === 'failed'">
+                                                <span class="w-2 h-2 rounded-full bg-red-500 block"></span>
+                                            </template>
+                                            <template x-if="item.status_kirim === 'pending'">
+                                                <span class="w-2 h-2 rounded-full bg-yellow-500 block"></span>
+                                            </template>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm text-gray-900 truncate" x-text="notificationTitle(item)"></p>
+                                            <p class="text-xs text-gray-500" x-text="formatDate(item.created_at)"></p>
+                                        </div>
+                                        <span class="text-xs px-2 py-0.5 rounded-full whitespace-nowrap"
+                                              :class="{
+                                                  'bg-green-100 text-green-700': item.status_kirim === 'sent',
+                                                  'bg-red-100 text-red-700': item.status_kirim === 'failed',
+                                                  'bg-yellow-100 text-yellow-700': item.status_kirim === 'pending'
+                                              }"
+                                              x-text="item.status_kirim === 'sent' ? 'Terkirim' : (item.status_kirim === 'failed' ? 'Gagal' : 'Pending')"></span>
+                                    </div>
+                                </template>
+                            </div>
+                            <div x-show="historyItems.length === 0 && !loadingHistory" class="text-center py-6">
+                                <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                <p class="text-sm text-gray-400">Belum ada riwayat notifikasi</p>
+                            </div>
                         </div>
                     </div>
                     @endif

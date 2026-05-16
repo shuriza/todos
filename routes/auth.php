@@ -7,7 +7,7 @@
 |
 | Aplikasi ini hanya menggunakan Google OAuth untuk autentikasi.
 | Route register, forgot-password, reset-password, verify-email,
-| dan confirm-password tidak digunakan (view sudah dihapus).
+| confirm-password, dan login email/password tidak digunakan.
 |
 */
 
