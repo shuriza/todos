@@ -18,7 +18,7 @@
         </div>
     </x-slot>
 
-    <div class="p-4 lg:p-6 space-y-5" x-data="dashboardApp()">
+    <div class="p-4 lg:p-6 space-y-5" x-data='dashboardApp({ categories: @json($categoryOptions ?? []) })'>
 
         {{-- Statistik --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -205,8 +205,12 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                            <input type="text" value="Atur kategori dari menu Semua Tugas" disabled
-                                   class="w-full rounded-lg border-gray-200 bg-gray-50 text-gray-500 text-sm">
+                            <select x-model.number="newTask.category_id" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Tanpa Kategori</option>
+                                <template x-for="category in categories" :key="category.id">
+                                    <option :value="category.id" x-text="category.name"></option>
+                                </template>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Prioritas</label>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\Category;
 use App\Models\Todo;
 use Illuminate\Support\Facades\Auth;
 
@@ -67,12 +68,22 @@ class HomeController extends Controller
             $urgentNotImportant = $byPriority->get('low', collect());
         }
 
+        $categoryOptions = Category::where('user_id', $userId)
+            ->orderBy('order', 'asc')
+            ->get()
+            ->map(fn (Category $category) => [
+                'id' => $category->id,
+                'name' => $category->name,
+            ])
+            ->values();
+
         return view('home', compact(
             'stats',
             'urgentImportant',
             'notUrgentImportant',
             'urgentNotImportant',
-            'notUrgentNotImportant'
+            'notUrgentNotImportant',
+            'categoryOptions'
         ));
     }
 

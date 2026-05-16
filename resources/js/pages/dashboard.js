@@ -8,16 +8,18 @@
 
 import { apiHeaders, formatDate, getKuadranLabel, toast } from '../helpers';
 
-window.dashboardApp = function () {
+window.dashboardApp = function (config = {}) {
     return {
         // State
         showDetailModal: false,
         showAddModal: false,
         selectedTask: null,
         addSaving: false,
+        categories: config.categories ?? [],
         newTask: {
             title: '',
             description: '',
+            category_id: '',
             priority: 'medium',
             due_date: '',
             due_time: '',
@@ -99,7 +101,7 @@ window.dashboardApp = function () {
                 const data = await res.json();
                 if (data.success || res.ok) {
                     this.showAddModal = false;
-                    this.newTask = { title: '', description: '', priority: 'medium', due_date: '', due_time: '' };
+                    this.newTask = { title: '', description: '', category_id: '', priority: 'medium', due_date: '', due_time: '' };
                     toast('Tugas berhasil ditambahkan!');
                     // Perlu reload untuk menempatkan tugas di kuadran yang tepat
                     setTimeout(() => location.reload(), 500);
