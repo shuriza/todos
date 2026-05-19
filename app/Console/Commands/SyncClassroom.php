@@ -73,12 +73,12 @@ class SyncClassroom extends Command
                     $this->line("  Tugas: {$taskResult['synced']} baru, {$taskResult['updated']} diperbarui, {$taskResult['skipped']} dilewati");
                 }
 
-                // Notif Telegram: hanya jika user enable classroom_sync pref + Telegram aktif + ada perubahan
+                // Notif Telegram: kirim ringkasan sync jika user enable classroom_sync pref + Telegram aktif.
+                // Tetap dikirim saat tidak ada perubahan agar user tahu sync 6 jam berhasil berjalan.
                 if (
                     $taskResult
                     && $user->hasTelegram()
                     && $user->isNotifEnabled('classroom_sync')
-                    && ($taskResult['synced'] > 0 || $taskResult['updated'] > 0)
                 ) {
                     $this->telegramService->sendClassroomSyncNotification(
                         $user,

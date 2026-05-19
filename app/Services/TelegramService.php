@@ -324,7 +324,7 @@ class TelegramService
      */
     public function sendClassroomSyncNotification(User $user, int $newTasks, int $updatedTasks): ?NotificationLog
     {
-        if (!$user->hasTelegram() || ($newTasks === 0 && $updatedTasks === 0)) {
+        if (!$user->hasTelegram()) {
             return null;
         }
 
@@ -335,6 +335,9 @@ class TelegramService
         }
         if ($updatedTasks > 0) {
             $message .= "Tugas diperbarui: {$updatedTasks}\n";
+        }
+        if ($newTasks === 0 && $updatedTasks === 0) {
+            $message .= "Tidak ada perubahan tugas baru.\n";
         }
 
         $message .= "\n<i>Lihat detail: /tugas</i>";
