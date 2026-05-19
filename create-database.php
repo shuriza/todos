@@ -1,6 +1,11 @@
 <?php
 /**
- * Database Creator Script
+ * Database Creator Script (one-time setup helper)
+ *
+ * Hanya untuk first-time install di environment lokal (XAMPP/Laragon)
+ * yang memakai MySQL `root` tanpa password. Setelah database `todos_ai`
+ * tersedia, jalankan migrasi normal dengan `php artisan migrate`.
+ *
  * Run: php create-database.php
  */
 

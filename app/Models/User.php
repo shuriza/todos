@@ -39,6 +39,10 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        // Password placeholder — TIDAK digunakan untuk login.
+        // Sistem hanya menerima Google OAuth (lihat routes/auth.php).
+        // GoogleAuthController mengisi field ini dengan random hash agar
+        // kolom password Laravel tetap non-null sesuai default schema.
         'password',
         'google_id',
         'google_access_token',
@@ -159,11 +163,17 @@ class User extends Authenticatable
 
     /**
      * Get notification preference value (with defaults).
+     *
+     * Resolution order:
+     *   1. Per-user setting (notification_preferences JSON)
+     *   2. Global default (defaultNotificationPreferences)
+     *   3. Caller-supplied default
      */
     public function getNotifPref(string $key, $default = null)
     {
-        $prefs = $this->notification_preferences ?? self::defaultNotificationPreferences();
-        return $prefs[$key] ?? $default ?? (self::defaultNotificationPreferences()[$key] ?? null);
+        $prefs = $this->notification_preferences ?? [];
+        $defaults = self::defaultNotificationPreferences();
+        return $prefs[$key] ?? $defaults[$key] ?? $default;
     }
 
     /**
