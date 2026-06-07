@@ -36,7 +36,7 @@ class ClassroomSyncNotificationTest extends TestCase
             'course_id' => $course->id,
             'title' => 'Tugas Lama',
             'description' => 'Tidak berubah',
-            'priority' => 'medium',
+            'priority' => 'high',
             'status' => 'todo',
             'kuadran' => 2,
             'sumber' => 'google_classroom',

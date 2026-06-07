@@ -60,7 +60,7 @@ class ArchiveService
 
         $query = Todo::with('course')
             ->where('user_id', $userId)
-            ->where('status', 'completed')
+            ->whereIn('status', ['completed', 'unfinished'])
             ->whereNotNull('completed_at');
 
         if ($start !== null) {
@@ -156,7 +156,7 @@ class ArchiveService
     public function getCoursesWithArchived(int $userId): Collection
     {
         return Course::where('user_id', $userId)
-            ->whereHas('todos', fn($q) => $q->where('status', 'completed')->whereNotNull('completed_at'))
+            ->whereHas('todos', fn($q) => $q->whereIn('status', ['completed', 'unfinished'])->whereNotNull('completed_at'))
             ->orderBy('nama_course')
             ->get(['id', 'nama_course']);
     }

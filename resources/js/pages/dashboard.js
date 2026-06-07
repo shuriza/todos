@@ -20,7 +20,7 @@ window.dashboardApp = function (config = {}) {
             title: '',
             description: '',
             category_id: '',
-            priority: 'medium',
+            priority: 'high',
             due_date: '',
             due_time: '',
         },
@@ -101,7 +101,7 @@ window.dashboardApp = function (config = {}) {
                 const data = await res.json();
                 if (data.success || res.ok) {
                     this.showAddModal = false;
-                    this.newTask = { title: '', description: '', category_id: '', priority: 'medium', due_date: '', due_time: '' };
+                    this.newTask = { title: '', description: '', category_id: '', priority: 'high', due_date: '', due_time: '' };
                     toast('Tugas berhasil ditambahkan!');
                     // Perlu reload untuk menempatkan tugas di kuadran yang tepat
                     setTimeout(() => location.reload(), 500);

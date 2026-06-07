@@ -179,19 +179,35 @@
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <ul class="divide-y divide-gray-100">
                     @foreach ($tasks as $task)
+                        @php $isUnfinished = $task->status === 'unfinished'; @endphp
                         <li class="p-4 hover:bg-gray-50 transition-colors">
                             <div class="flex items-start gap-3">
-                                {{-- Checkmark Icon --}}
-                                <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                </div>
+                                {{-- Status Icon: hijau centang (selesai) / merah silang (tidak terselesaikan) --}}
+                                @if ($isUnfinished)
+                                    <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mt-0.5">
+                                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </div>
+                                @else
+                                    <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                @endif
 
                                 {{-- Content --}}
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-start justify-between gap-3">
-                                        <h4 class="text-sm font-semibold text-gray-900 line-clamp-1">{{ $task->title }}</h4>
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <h4 class="text-sm font-semibold {{ $isUnfinished ? 'text-gray-700' : 'text-gray-900' }} line-clamp-1">{{ $task->title }}</h4>
+                                            @if ($isUnfinished)
+                                                <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">Tidak Terselesaikan</span>
+                                            @else
+                                                <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">Selesai</span>
+                                            @endif
+                                        </div>
                                         <span class="flex-shrink-0 text-xs text-gray-500">
                                             {{ $task->completed_at?->translatedFormat('d M Y') }}
                                         </span>
@@ -218,12 +234,10 @@
                                         @php
                                             $priorityColor = [
                                                 'high'   => 'bg-red-50 text-red-700',
-                                                'medium' => 'bg-yellow-50 text-yellow-700',
                                                 'low'    => 'bg-gray-50 text-gray-700',
                                             ][$task->priority] ?? 'bg-gray-50 text-gray-700';
                                             $priorityLabel = [
                                                 'high'   => 'Tinggi',
-                                                'medium' => 'Sedang',
                                                 'low'    => 'Rendah',
                                             ][$task->priority] ?? $task->priority;
                                         @endphp

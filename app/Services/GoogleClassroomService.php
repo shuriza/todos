@@ -354,20 +354,11 @@ class GoogleClassroomService
                 }
             }
 
-            // Determine priority based on due date
-            $priority = 'medium';
-            if ($dueDate) {
-                $daysUntil = now()->diffInDays(Carbon::parse($dueDate), false);
-                if ($daysUntil < 0) {
-                    $priority = 'high'; // Overdue
-                } elseif ($daysUntil <= 3) {
-                    $priority = 'high'; // Urgent
-                } elseif ($daysUntil <= 7) {
-                    $priority = 'medium';
-                } else {
-                    $priority = 'low';
-                }
-            }
+            // Prioritas tugas Classroom selalu "high" (Penting) karena tugas
+            // dari dosen bersifat penting secara inheren. Dimensi urgensi
+            // (dari deadline) yang menentukan kuadran K1 vs K2 melalui
+            // Todo::hitungKuadran(). Pengguna dapat menurunkan prioritas manual.
+            $priority = 'high';
 
             // Calculate kuadran Eisenhower
             $kuadran = Todo::hitungKuadran($priority, $dueDate);
@@ -384,6 +375,7 @@ class GoogleClassroomService
                 'priority' => $priority,
                 'kuadran' => $kuadran,
                 'sumber' => 'google_classroom',
+                'google_link' => $cw['alternateLink'] ?? null,
                 'due_date' => $dueDate,
                 'due_time' => $dueTime,
             ];

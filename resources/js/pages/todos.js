@@ -8,7 +8,7 @@
  */
 
 import Sortable from 'sortablejs';
-import { apiHeaders, formatDate, getKuadranLabel, toast } from '../helpers';
+import { apiHeaders, formatDate, getKuadranLabel, getPriorityLabel, getStatusLabel, toast } from '../helpers';
 
 window.todoPageApp = function (config = {}) {
     return {
@@ -37,7 +37,7 @@ window.todoPageApp = function (config = {}) {
             title: '',
             description: '',
             category_id: '',
-            priority: 'medium',
+            priority: 'high',
             due_date: '',
             due_time: '',
         },
@@ -98,7 +98,7 @@ window.todoPageApp = function (config = {}) {
                 title: '',
                 description: '',
                 category_id: '',
-                priority: 'medium',
+                priority: 'high',
                 due_date: '',
                 due_time: '',
             };
@@ -257,6 +257,44 @@ window.todoPageApp = function (config = {}) {
             }
         },
 
+        // Tandai tugas sebagai "Tidak Terselesaikan" (lewat deadline & tidak dikerjakan).
+        // Tugas tetap masuk Arsip dengan penanda gagal.
+        async markUnfinished(id) {
+            if (!confirm('Tandai tugas ini sebagai TIDAK TERSELESAIKAN? Tugas akan dipindahkan ke Arsip dengan penanda tidak terselesaikan.')) return;
+            try {
+                const res = await fetch(`/todos/${id}`, {
+                    method: 'PUT',
+                    headers: apiHeaders(),
+                    body: JSON.stringify({ status: 'unfinished' }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    toast('Tugas ditandai tidak terselesaikan');
+                    // Hapus dari daftar aktif (sudah pindah ke arsip)
+                    const row = document.getElementById(`todo-row-${id}`);
+                    if (row) {
+                        row.style.transition = 'opacity 0.2s';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 200);
+                    }
+                } else {
+                    toast(data.message || 'Gagal mengubah status', 'error');
+                }
+            } catch {
+                toast('Gagal mengubah status', 'error');
+            }
+        },
+
+        // Cek apakah tugas sudah lewat deadline (untuk menampilkan tombol "Tidak Terselesaikan").
+        isTaskOverdue(task) {
+            if (!task || !task.due_date) return false;
+            const due = new Date(task.due_date);
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            due.setHours(0, 0, 0, 0);
+            return due < now;
+        },
+
         async deleteTodo(id) {
             if (!confirm('Hapus tugas ini?')) return;
             try {
@@ -328,6 +366,14 @@ window.todoPageApp = function (config = {}) {
 
         getKuadranLabel(k) {
             return getKuadranLabel(k);
+        },
+
+        getPriorityLabel(p) {
+            return getPriorityLabel(p);
+        },
+
+        getStatusLabel(s) {
+            return getStatusLabel(s);
         },
 
         formatDate(d) {

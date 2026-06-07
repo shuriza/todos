@@ -149,8 +149,8 @@
                         $isOverdue = $todo->due_date && $todo->due_date->isPast() && $todo->status !== 'completed';
                         $kuadranColors = [1 => 'bg-red-100 text-red-700', 2 => 'bg-blue-100 text-blue-700', 3 => 'bg-yellow-100 text-yellow-700', 4 => 'bg-gray-100 text-gray-600'];
                         $kuadranNames = [1 => 'Lakukan Sekarang', 2 => 'Jadwalkan', 3 => 'Delegasikan', 4 => 'Eliminasi'];
-                        $priorityColors = ['high' => 'bg-red-100 text-red-700', 'medium' => 'bg-yellow-100 text-yellow-700', 'low' => 'bg-green-100 text-green-700'];
-                        $priorityNames = ['high' => 'Tinggi', 'medium' => 'Sedang', 'low' => 'Rendah'];
+                        $priorityColors = ['high' => 'bg-red-100 text-red-700', 'low' => 'bg-green-100 text-green-700'];
+                        $priorityNames = ['high' => 'Tinggi', 'low' => 'Rendah'];
                     @endphp
                     <div id="todo-row-{{ $todo->id }}" data-todo-id="{{ $todo->id }}" class="px-5 py-4 hover:bg-gray-50 transition-colors group {{ $todo->status === 'completed' ? 'bg-gray-50/50' : '' }}">
                         <div class="lg:grid lg:grid-cols-12 gap-4 flex flex-col lg:flex-row items-start lg:items-center">
@@ -175,17 +175,20 @@
 
                             {{-- Title + Description --}}
                             <div class="col-span-4 min-w-0 cursor-pointer" @click="openDetail({{ json_encode($todo->toArray()) }})">
-                                <p class="text-sm font-medium truncate {{ $todo->status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-900' }}">
+                                <p class="text-sm font-medium line-clamp-2 {{ $todo->status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-900' }}">
                                     {{ $todo->title }}
                                 </p>
-                                <div class="flex items-center gap-2 mt-1">
+                                @if ($todo->description)
+                                    <p class="text-xs text-gray-500 line-clamp-1 mt-0.5">{{ $todo->description }}</p>
+                                @endif
+                                <div class="flex items-center flex-wrap gap-1.5 mt-1">
                                     @if ($todo->course)
-                                        <span class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+                                        <span class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded max-w-[180px] truncate" title="{{ $todo->course->nama_course }}">
                                             {{ $todo->course->nama_course }}
                                         </span>
                                     @endif
                                     @if ($todo->category)
-                                        <span class="text-xs text-gray-500">{{ ucfirst(str_replace('_', ' ', $todo->category)) }}</span>
+                                        <span class="inline-flex items-center text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{{ ucfirst(str_replace('_', ' ', $todo->category)) }}</span>
                                     @endif
                                 </div>
                             </div>
@@ -291,14 +294,33 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div><span class="text-gray-500 block text-xs mb-1">Kuadran</span><span class="font-medium" x-text="getKuadranLabel(selectedTask?.kuadran)"></span></div>
-                        <div><span class="text-gray-500 block text-xs mb-1">Status</span><span class="font-medium capitalize" x-text="selectedTask?.status?.replace('_', ' ')"></span></div>
-                        <div><span class="text-gray-500 block text-xs mb-1">Prioritas</span><span class="font-medium capitalize" x-text="selectedTask?.priority"></span></div>
+                        <div><span class="text-gray-500 block text-xs mb-1">Status</span><span class="font-medium" x-text="getStatusLabel(selectedTask?.status)"></span></div>
+                        <div><span class="text-gray-500 block text-xs mb-1">Prioritas</span><span class="font-medium" x-text="getPriorityLabel(selectedTask?.priority)"></span></div>
                         <div><span class="text-gray-500 block text-xs mb-1">Deadline</span><span class="font-medium" x-text="selectedTask?.due_date ? formatDate(selectedTask.due_date) : 'Tidak ada'"></span></div>
                     </div>
-                    <div class="mt-6 flex gap-3">
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        {{-- Buka tugas di Google Classroom (hanya untuk tugas bersumber Classroom yang punya link) --}}
+                        <a x-show="selectedTask?.sumber === 'google_classroom' && selectedTask?.google_link"
+                           :href="selectedTask?.google_link" target="_blank" rel="noopener noreferrer"
+                           class="flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors bg-emerald-600 text-white hover:bg-emerald-700 inline-flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            Buka di Classroom
+                        </a>
                         <button @click="toggleStatus(selectedTask?.id, selectedTask?.status); showDetailModal = false" class="flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors"
                                 :class="selectedTask?.status === 'completed' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-green-600 text-white hover:bg-green-700'">
                             <span x-text="selectedTask?.status === 'completed' ? 'Buka Kembali' : 'Tandai Selesai'"></span>
+                        </button>
+                        {{-- Tombol "Tidak Terselesaikan" hanya untuk tugas yang sudah lewat deadline & belum berstatus final --}}
+                        <button x-show="isTaskOverdue(selectedTask) && selectedTask?.status !== 'completed' && selectedTask?.status !== 'unfinished'"
+                                @click="markUnfinished(selectedTask?.id); showDetailModal = false"
+                                class="flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors bg-red-600 text-white hover:bg-red-700">
+                            Tidak Terselesaikan
+                        </button>
+                        {{-- Jika sudah unfinished, beri opsi buka kembali --}}
+                        <button x-show="selectedTask?.status === 'unfinished'"
+                                @click="toggleStatus(selectedTask?.id, 'unfinished'); showDetailModal = false"
+                                class="flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+                            Buka Kembali
                         </button>
                         <button @click="showDetailModal = false" class="px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">Tutup</button>
                     </div>
@@ -340,7 +362,6 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Prioritas</label>
                             <select x-model="form.priority" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                                 <option value="high">Tinggi</option>
-                                <option value="medium">Sedang</option>
                                 <option value="low">Rendah</option>
                             </select>
                         </div>

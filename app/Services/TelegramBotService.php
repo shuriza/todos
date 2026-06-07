@@ -959,10 +959,10 @@ class TelegramBotService
                 $meta[] = "deadline {$dateStr}";
             }
 
-            $priorityLabel = match ($task['priority'] ?? 'medium') {
-                'high'   => 'prioritas tinggi',
-                'low'    => 'prioritas rendah',
-                default  => 'prioritas sedang',
+            $priorityLabel = match ($task['priority'] ?? 'high') {
+                'high'   => 'penting',
+                'low'    => 'tidak penting',
+                default  => 'penting',
             };
             $meta[] = $priorityLabel;
 

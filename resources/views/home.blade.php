@@ -216,7 +216,6 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Prioritas</label>
                             <select x-model="newTask.priority" class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="high">Tinggi</option>
-                                <option value="medium">Sedang</option>
                                 <option value="low">Rendah</option>
                             </select>
                         </div>

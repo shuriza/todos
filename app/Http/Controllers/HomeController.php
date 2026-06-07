@@ -59,12 +59,11 @@ class HomeController extends Controller
         if ($allEmpty) {
             $byPriority = Todo::where('user_id', $userId)
                 ->where('status', '!=', 'completed')
-                ->whereIn('priority', ['high', 'medium', 'low'])
+                ->whereIn('priority', ['high', 'low'])
                 ->get()
                 ->groupBy('priority');
 
             $urgentImportant    = $byPriority->get('high', collect());
-            $notUrgentImportant = $byPriority->get('medium', collect());
             $urgentNotImportant = $byPriority->get('low', collect());
         }
 

@@ -220,7 +220,7 @@ class AiAssistantService
                     'title'            => $taskData['title'],
                     'description'      => $taskData['description'] ?? null,
                     'category'         => $categoryStr,
-                    'priority'         => $taskData['priority'] ?? 'medium',
+                    'priority'         => $taskData['priority'] ?? 'high',
                     'kuadran'          => $taskData['kuadran'] ?? 2,
                     'status'           => 'todo',
                     'sumber'           => 'manual',
@@ -293,7 +293,7 @@ class AiAssistantService
     {
         $todos = Todo::where('user_id', $userId)
             ->where('status', '!=', 'completed')
-            ->orderByRaw("CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END")
+            ->orderByRaw("CASE priority WHEN 'high' THEN 1 WHEN 'low' THEN 2 ELSE 3 END")
             ->orderBy('due_date', 'asc')
             ->get();
 
@@ -340,7 +340,7 @@ ATURAN PEMBUATAN TUGAS:
 - Setiap tugas HARUS berisi: title, description, category, priority, kuadran, due_date
 - Format due_date: YYYY-MM-DD (berdasarkan hari ini: {$today})
 - category: "kuliah" | "pekerjaan" | "daily_activity"
-- priority: "high" | "medium" | "low"
+- priority: "high" (Penting) | "low" (Tidak Penting)
 - kuadran: 1 (Do Now - Mendesak & Penting), 2 (Schedule - Penting tapi tidak mendesak), 3 (Delegate - Mendesak tapi tidak penting), 4 (Eliminate - Tidak keduanya)
 - due_time: format HH:MM atau null
 - reminder_minutes: angka menit pengingat sebelum deadline (opsional). Contoh: 1, 5, 10, 15, 30, 60. Jika user bilang "ingatkan 5 menit sebelumnya" → reminder_minutes: 5. Jika user bilang "ingatkan 1 jam sebelumnya" → reminder_minutes: 60. Jika tidak disebutkan → null (pakai setting global user).
@@ -353,7 +353,7 @@ Baik, saya buatkan 3 tugas untuk mata kuliah Basis Data:
 <!--TASKS_START-->
 [
   {"title": "Review materi normalisasi database", "description": "Baca ulang materi normalisasi 1NF, 2NF, 3NF dari slide pertemuan 5-7", "category": "kuliah", "priority": "high", "kuadran": 1, "due_date": "2026-02-24", "due_time": null, "reminder_minutes": null},
-  {"title": "Latihan soal query SQL JOIN", "description": "Kerjakan 10 soal latihan SQL JOIN dari modul praktikum", "category": "kuliah", "priority": "medium", "kuadran": 2, "due_date": "2026-02-26", "due_time": "14:00", "reminder_minutes": 30}
+  {"title": "Latihan soal query SQL JOIN", "description": "Kerjakan 10 soal latihan SQL JOIN dari modul praktikum", "category": "kuliah", "priority": "low", "kuadran": 2, "due_date": "2026-02-26", "due_time": "14:00", "reminder_minutes": 30}
 ]
 <!--TASKS_END-->
 
@@ -461,7 +461,7 @@ PROMPT;
     {
         $validated = [];
         $allowedCategories = ['kuliah', 'pekerjaan', 'daily_activity'];
-        $allowedPriorities = ['high', 'medium', 'low'];
+        $allowedPriorities = ['high', 'low'];
 
         foreach ($tasks as $task) {
             if (empty($task['title'])) continue;
@@ -470,7 +470,7 @@ PROMPT;
                 'title'            => (string) ($task['title'] ?? ''),
                 'description'      => (string) ($task['description'] ?? ''),
                 'category'         => in_array($task['category'] ?? '', $allowedCategories) ? $task['category'] : 'kuliah',
-                'priority'         => in_array($task['priority'] ?? '', $allowedPriorities) ? $task['priority'] : 'medium',
+                'priority'         => in_array($task['priority'] ?? '', $allowedPriorities) ? $task['priority'] : 'high',
                 'kuadran'          => in_array((int)($task['kuadran'] ?? 2), [1, 2, 3, 4]) ? (int)$task['kuadran'] : 2,
                 'due_date'         => $this->parseDateSafe($task['due_date'] ?? null),
                 'due_time'         => $this->parseTimeSafe($task['due_time'] ?? null),

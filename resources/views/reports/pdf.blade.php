@@ -118,10 +118,6 @@
                             <td class="value">{{ $priority['high'] }}</td>
                         </tr>
                         <tr>
-                            <td class="label">Sedang</td>
-                            <td class="value">{{ $priority['medium'] }}</td>
-                        </tr>
-                        <tr>
                             <td class="label">Rendah</td>
                             <td class="value">{{ $priority['low'] }}</td>
                         </tr>

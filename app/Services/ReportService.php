@@ -203,7 +203,7 @@ class ReportService
     // =========================================================================
 
     /**
-     * Jumlah task per level prioritas (high/medium/low).
+     * Jumlah task per level prioritas (high/low = Penting/Tidak Penting).
      */
     public function getPriorityDistribution(int $userId, string $period = '30d'): array
     {
@@ -214,14 +214,12 @@ class ReportService
                 ->whereBetween('created_at', [$start, $end])
                 ->selectRaw("
                     SUM(CASE WHEN priority = 'high' THEN 1 ELSE 0 END) AS high,
-                    SUM(CASE WHEN priority = 'medium' THEN 1 ELSE 0 END) AS medium,
                     SUM(CASE WHEN priority = 'low' THEN 1 ELSE 0 END) AS low
                 ")
                 ->first();
 
             return [
                 'high'   => (int) ($rows->high ?? 0),
-                'medium' => (int) ($rows->medium ?? 0),
                 'low'    => (int) ($rows->low ?? 0),
             ];
         });

@@ -56,6 +56,7 @@ class Todo extends Model
         'kuadran',
         'sumber',
         'google_task_id',
+        'google_link',
         'due_date',
         'due_time',
         'reminder_minutes',
@@ -270,9 +271,12 @@ class Todo extends Model
 
     /**
      * Hitung kuadran Eisenhower otomatis berdasarkan priority dan deadline.
-     * Algoritma (sesuai Tabel 3.1 proposal TA):
+     * Algoritma (sesuai Tabel 3.1):
      * - Mendesak (High Urgency) = deadline <= config('todos.urgency_days') hari (default 1 = 24 jam)
-     * - Penting (High Importance) = priority high/medium
+     * - Penting (High Importance) = priority high
+     *
+     * Prioritas bersifat biner sesuai sumbu importance Matriks Eisenhower:
+     *   high = Penting, low = Tidak Penting.
      *
      * Kuadran 1 (DO NOW): Mendesak + Penting
      * Kuadran 2 (SCHEDULE): Tidak Mendesak + Penting
@@ -282,7 +286,7 @@ class Todo extends Model
     public static function hitungKuadran(string $priority, ?string $dueDate): int
     {
         $isUrgent = false;
-        $isImportant = in_array($priority, ['high', 'medium']);
+        $isImportant = ($priority === 'high');
 
         if ($dueDate) {
             $deadline = Carbon::parse($dueDate);

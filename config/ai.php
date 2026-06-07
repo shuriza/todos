@@ -71,7 +71,7 @@ return [
 
     'task_preview' => [
         'allowed_categories' => ['kuliah', 'pekerjaan', 'daily_activity'],
-        'allowed_priorities' => ['high', 'medium', 'low'],
+        'allowed_priorities' => ['high', 'low'],
         'max_per_batch'      => 15,
     ],
 ];

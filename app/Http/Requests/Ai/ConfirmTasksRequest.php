@@ -20,7 +20,7 @@ class ConfirmTasksRequest extends FormRequest
     {
         $maxBatch = config('ai.task_preview.max_per_batch', 15);
         $allowedCats = config('ai.task_preview.allowed_categories', ['kuliah', 'pekerjaan', 'daily_activity']);
-        $allowedPris = config('ai.task_preview.allowed_priorities', ['high', 'medium', 'low']);
+        $allowedPris = config('ai.task_preview.allowed_priorities', ['high', 'low']);
 
         return [
             'tasks'                   => ['required', 'array', 'min:1', "max:{$maxBatch}"],

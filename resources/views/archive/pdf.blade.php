@@ -140,7 +140,6 @@
                             @php
                                 $priorityBadge = [
                                     'high'   => ['badge-high', 'Tinggi'],
-                                    'medium' => ['badge-medium', 'Sedang'],
                                     'low'    => ['badge-low', 'Rendah'],
                                 ][$task->priority] ?? ['badge-low', $task->priority];
                             @endphp

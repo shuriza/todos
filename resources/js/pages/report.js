@@ -26,7 +26,7 @@ window.reportApp = function () {
             overview: { total: 0, completed: 0, pending: 0, overdue: 0, completion_rate: 0, on_time_rate: null },
             trend: [],
             kuadran: { q1: 0, q2: 0, q3: 0, q4: 0 },
-            priority: { high: 0, medium: 0, low: 0 },
+            priority: { high: 0, low: 0 },
             category: {},
             source: { manual: 0, google_classroom: 0 },
         },

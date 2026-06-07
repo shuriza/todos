@@ -117,7 +117,7 @@ class TodoController extends Controller
         $validated = $this->normalizeCategoryPayload($validated, Auth::id());
 
         $kuadran = Todo::hitungKuadran(
-            $validated['priority'] ?? 'medium',
+            $validated['priority'] ?? 'high',
             $validated['due_date'] ?? null
         );
 
@@ -149,9 +149,13 @@ class TodoController extends Controller
 
         $validated = $this->normalizeCategoryPayload($validated, Auth::id());
 
-        if (isset($validated['status']) && $validated['status'] === 'completed' && $todo->status !== 'completed') {
+        // Status final (completed/unfinished) menandai tugas "ditutup" dan
+        // diberi timestamp completed_at agar muncul di Arsip. Status aktif
+        // (todo/in_progress) mengosongkan kembali completed_at.
+        $finalStatuses = ['completed', 'unfinished'];
+        if (isset($validated['status']) && in_array($validated['status'], $finalStatuses, true) && !in_array($todo->status, $finalStatuses, true)) {
             $validated['completed_at'] = now();
-        } elseif (isset($validated['status']) && $validated['status'] !== 'completed') {
+        } elseif (isset($validated['status']) && !in_array($validated['status'], $finalStatuses, true)) {
             $validated['completed_at'] = null;
         }
 
@@ -237,7 +241,6 @@ class TodoController extends Controller
                     SUM(CASE WHEN status = 'todo' THEN 1 ELSE 0 END) AS todo,
                     SUM(CASE WHEN status <> 'completed' AND due_date IS NOT NULL AND due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue,
                     SUM(CASE WHEN status <> 'completed' AND priority = 'high' THEN 1 ELSE 0 END) AS pri_high,
-                    SUM(CASE WHEN status <> 'completed' AND priority = 'medium' THEN 1 ELSE 0 END) AS pri_medium,
                     SUM(CASE WHEN status <> 'completed' AND priority = 'low' THEN 1 ELSE 0 END) AS pri_low
                 ")
                 ->first();
@@ -258,7 +261,6 @@ class TodoController extends Controller
                 'todo'        => (int) ($row->todo ?? 0),
                 'by_priority' => [
                     'high'   => (int) ($row->pri_high ?? 0),
-                    'medium' => (int) ($row->pri_medium ?? 0),
                     'low'    => (int) ($row->pri_low ?? 0),
                 ],
             ]);

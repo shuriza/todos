@@ -92,6 +92,25 @@ export function getKuadranShort(k) {
 }
 
 /**
+ * Label prioritas (2 level: high=Tinggi, low=Rendah)
+ */
+export function getPriorityLabel(p) {
+    return { high: 'Tinggi', low: 'Rendah' }[p] || '-';
+}
+
+/**
+ * Label status tugas (Bahasa Indonesia)
+ */
+export function getStatusLabel(s) {
+    return {
+        todo: 'Belum Dikerjakan',
+        in_progress: 'Sedang Dikerjakan',
+        completed: 'Selesai',
+        unfinished: 'Tidak Terselesaikan',
+    }[s] || '-';
+}
+
+/**
  * CSS class untuk badge kuadran
  */
 export function getKuadranBadgeClass(k) {

@@ -24,7 +24,7 @@ class StoreTodoRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'category_id' => ['nullable', new OwnedByUser('categories')],
             'category'    => ['nullable', 'string', 'max:255'],
-            'priority'    => ['required', 'in:low,medium,high'],
+            'priority'    => ['required', 'in:low,high'],
             'due_date'    => ['nullable', 'date'],
             'due_time'    => ['nullable', 'date_format:H:i'],
             'course_id'   => ['nullable', new OwnedByUser('courses')],
