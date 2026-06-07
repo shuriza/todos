@@ -33,7 +33,7 @@ class HomeController extends Controller
 
         // Kuadran: single query diambil lalu di-group di PHP (dulu: 4 query terpisah)
         $byKuadran = Todo::where('user_id', $userId)
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->whereIn('kuadran', [
                 Todo::KUADRAN_DO_NOW,
                 Todo::KUADRAN_SCHEDULE,
@@ -58,7 +58,7 @@ class HomeController extends Controller
 
         if ($allEmpty) {
             $byPriority = Todo::where('user_id', $userId)
-                ->where('status', '!=', 'completed')
+                ->whereNotIn('status', ['completed', 'unfinished'])
                 ->whereIn('priority', ['high', 'low'])
                 ->get()
                 ->groupBy('priority');
@@ -95,8 +95,8 @@ class HomeController extends Controller
                 ->selectRaw("
                     COUNT(*) AS total,
                     SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
-                    SUM(CASE WHEN status <> 'completed' THEN 1 ELSE 0 END) AS pending,
-                    SUM(CASE WHEN status <> 'completed' AND due_date IS NOT NULL AND due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue,
+                    SUM(CASE WHEN status NOT IN ('completed','unfinished') THEN 1 ELSE 0 END) AS pending,
+                    SUM(CASE WHEN status NOT IN ('completed','unfinished') AND due_date IS NOT NULL AND due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue,
                     SUM(CASE WHEN sumber = 'google_classroom' THEN 1 ELSE 0 END) AS classroom
                 ")
                 ->first();

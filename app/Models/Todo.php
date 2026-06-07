@@ -53,6 +53,7 @@ class Todo extends Model
         'description',
         'priority',
         'status',
+        'status_locked',
         'kuadran',
         'sumber',
         'google_task_id',
@@ -68,6 +69,7 @@ class Todo extends Model
     protected $casts = [
         'due_date' => 'date',
         'completed_at' => 'datetime',
+        'status_locked' => 'boolean',
         'tags' => 'array',
         'order' => 'integer',
         'kuadran' => 'integer',
@@ -151,11 +153,14 @@ class Todo extends Model
 
     /**
      * Scope: only overdue todos.
+     *
+     * Status final (completed & unfinished) dikecualikan karena tugas tersebut
+     * sudah ditutup/diarsipkan dan tidak lagi dianggap aktif.
      */
     public function scopeOverdue($query)
     {
         return $query->where('due_date', '<', today())
-                    ->where('status', '!=', 'completed');
+                    ->whereNotIn('status', ['completed', 'unfinished']);
     }
 
     /**
@@ -175,11 +180,14 @@ class Todo extends Model
     }
 
     /**
-     * Scope: incomplete tasks.
+     * Scope: incomplete (aktif) tasks.
+     *
+     * Mengecualikan kedua status final: completed (selesai) dan unfinished
+     * (tidak terselesaikan). Keduanya sudah diarsipkan dan tidak aktif lagi.
      */
     public function scopeIncomplete($query)
     {
-        return $query->where('status', '!=', 'completed');
+        return $query->whereNotIn('status', ['completed', 'unfinished']);
     }
 
     /**
@@ -264,7 +272,8 @@ class Todo extends Model
      */
     public function isOverdue(): bool
     {
-        return $this->deadline && $this->deadline->isPast() && $this->status !== 'completed';
+        return $this->deadline && $this->deadline->isPast()
+            && !in_array($this->status, ['completed', 'unfinished'], true);
     }
 
     // ===== EISENHOWER ALGORITHM =====

@@ -57,9 +57,13 @@ class TodoController extends Controller
             });
         }
 
-        // Filter by status
+        // Filter by status. Default: sembunyikan tugas "unfinished" (tidak
+        // terselesaikan) dari daftar aktif karena sudah dipindah ke Arsip.
+        // Jika pengguna memilih status eksplisit, hormati pilihan tersebut.
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
+        } else {
+            $query->where('status', '!=', 'unfinished');
         }
 
         // Filter by category (string field)
@@ -159,6 +163,13 @@ class TodoController extends Controller
             $validated['completed_at'] = null;
         }
 
+        // Perubahan status manual mengunci tugas (status_locked) agar
+        // sinkronisasi Google Classroom tidak menimpa keputusan mahasiswa.
+        // Inilah yang membuat auto-detect "tidak terselesaikan" bersifat reversible.
+        if (isset($validated['status']) && $validated['status'] !== $todo->status) {
+            $validated['status_locked'] = true;
+        }
+
         if (!isset($validated['kuadran']) && (isset($validated['priority']) || isset($validated['due_date']))) {
             $validated['kuadran'] = Todo::hitungKuadran(
                 $validated['priority'] ?? $todo->priority,
@@ -236,12 +247,12 @@ class TodoController extends Controller
                 ->selectRaw("
                     COUNT(*) AS total,
                     SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
-                    SUM(CASE WHEN status <> 'completed' THEN 1 ELSE 0 END) AS pending,
+                    SUM(CASE WHEN status NOT IN ('completed','unfinished') THEN 1 ELSE 0 END) AS pending,
                     SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) AS in_progress,
                     SUM(CASE WHEN status = 'todo' THEN 1 ELSE 0 END) AS todo,
-                    SUM(CASE WHEN status <> 'completed' AND due_date IS NOT NULL AND due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue,
-                    SUM(CASE WHEN status <> 'completed' AND priority = 'high' THEN 1 ELSE 0 END) AS pri_high,
-                    SUM(CASE WHEN status <> 'completed' AND priority = 'low' THEN 1 ELSE 0 END) AS pri_low
+                    SUM(CASE WHEN status NOT IN ('completed','unfinished') AND due_date IS NOT NULL AND due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue,
+                    SUM(CASE WHEN status NOT IN ('completed','unfinished') AND priority = 'high' THEN 1 ELSE 0 END) AS pri_high,
+                    SUM(CASE WHEN status NOT IN ('completed','unfinished') AND priority = 'low' THEN 1 ELSE 0 END) AS pri_low
                 ")
                 ->first();
 

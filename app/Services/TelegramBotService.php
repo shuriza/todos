@@ -229,7 +229,7 @@ class TelegramBotService
 
         $todos = $user->todos()
             ->with('course')
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->orderBy('kuadran')
             ->orderBy('due_date')
             ->limit(20)
@@ -251,7 +251,7 @@ class TelegramBotService
                 . "     {$due}{$progress}\n";
         }
 
-        $total = $user->todos()->where('status', '!=', 'completed')->count();
+        $total = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->count();
         if ($total > 20) {
             $message .= "\n<i>+" . ($total - 20) . " tugas lainnya — buka web untuk lihat semua</i>";
         }
@@ -271,7 +271,7 @@ class TelegramBotService
 
         $todos = $user->todos()
             ->with('course')
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->whereDate('due_date', today())
             ->orderBy('kuadran')
             ->get();
@@ -309,7 +309,7 @@ class TelegramBotService
         }
 
         $todos = $user->todos()
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->where('kuadran', 1)
             ->orderBy('due_date')
             ->limit(15)
@@ -317,7 +317,7 @@ class TelegramBotService
 
         // Also get overdue tasks
         $overdue = $user->todos()
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->where('due_date', '<', now()->toDateString())
             ->orderBy('due_date')
             ->get();
@@ -370,18 +370,18 @@ class TelegramBotService
             return;
         }
 
-        $totalActive = $user->todos()->where('status', '!=', 'completed')->count();
+        $totalActive = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->count();
         $totalCompleted = $user->todos()->where('status', 'completed')->count();
-        $todayDue = $user->todos()->where('status', '!=', 'completed')->whereDate('due_date', today())->count();
-        $overdue = $user->todos()->where('status', '!=', 'completed')->where('due_date', '<', now()->toDateString())->count();
+        $todayDue = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->whereDate('due_date', today())->count();
+        $overdue = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->where('due_date', '<', now()->toDateString())->count();
         $completedToday = $user->todos()->where('status', 'completed')->whereDate('updated_at', today())->count();
         $inProgress = $user->todos()->where('status', 'in_progress')->count();
 
         // Quadrant breakdown
-        $q1 = $user->todos()->where('status', '!=', 'completed')->where('kuadran', 1)->count();
-        $q2 = $user->todos()->where('status', '!=', 'completed')->where('kuadran', 2)->count();
-        $q3 = $user->todos()->where('status', '!=', 'completed')->where('kuadran', 3)->count();
-        $q4 = $user->todos()->where('status', '!=', 'completed')->where('kuadran', 4)->count();
+        $q1 = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->where('kuadran', 1)->count();
+        $q2 = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->where('kuadran', 2)->count();
+        $q3 = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->where('kuadran', 3)->count();
+        $q4 = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->where('kuadran', 4)->count();
 
         $total = $totalActive + $totalCompleted;
         $pctDone = $total > 0 ? round($totalCompleted / $total * 100) : 0;
@@ -419,7 +419,7 @@ class TelegramBotService
             return;
         }
 
-        $activeTodos = $user->todos()->where('status', '!=', 'completed')->count();
+        $activeTodos = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->count();
         if ($activeTodos === 0) {
             $this->telegram->sendMessage($chatId, "Belum ada tugas aktif untuk direncanakan.");
             return;
@@ -454,7 +454,7 @@ class TelegramBotService
         $perPage = 8;
         $allTodos = $user->todos()
             ->with('course')
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->orderBy('due_date')
             ->orderBy('kuadran')
             ->get();
@@ -804,7 +804,7 @@ class TelegramBotService
             . "Selesai: " . now()->translatedFormat('d M Y, H:i');
 
         // Add keyboard: undo option + navigation
-        $remaining = $user->todos()->where('status', '!=', 'completed')->count();
+        $remaining = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->count();
         $keyboard = [
             [
                 ['text' => 'Batalkan (undo)', 'callback_data' => "undo_complete_{$todo->id}"],

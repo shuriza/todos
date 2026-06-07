@@ -205,18 +205,18 @@ class TelegramService
         }
 
         $todayTodos = $user->todos()
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->whereDate('due_date', today())
             ->orderBy('kuadran')
             ->get();
 
         $overdueTodos = $user->todos()
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->where('due_date', '<', now()->toDateString())
             ->count();
 
         $totalPending = $user->todos()
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->count();
 
         $completedToday = $user->todos()

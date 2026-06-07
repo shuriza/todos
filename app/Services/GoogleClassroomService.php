@@ -341,7 +341,7 @@ class GoogleClassroomService
             }
 
             // Determine status - check submissions
-            // Default to 'todo' (valid DB enum: todo, in_progress, completed)
+            // Default to 'todo' (valid DB enum: todo, in_progress, completed, unfinished)
             $status = 'todo';
             $submissions = $this->fetchSubmissions($course->google_course_id, $cw['id']);
             foreach ($submissions as $sub) {
@@ -352,6 +352,19 @@ class GoogleClassroomService
                 } elseif ($subState === 'CREATED') {
                     $status = 'todo'; // Assigned but not started
                 }
+            }
+
+            // Auto-detect "tidak terselesaikan" (reversible).
+            // Google Classroom API tidak mengekspos status "ditutup", sehingga
+            // kita menyimpulkannya: tugas yang BELUM dikirim (bukan completed)
+            // dan sudah lewat tenggat melebihi masa tenggang dianggap tidak
+            // terselesaikan. Bersifat reversible — keputusan manual mahasiswa
+            // (status_locked) tidak akan ditimpa pada sinkronisasi berikutnya.
+            $graceDays = (int) config('todos.unfinished_grace_days', 1);
+            $autoUnfinished = false;
+            if ($graceDays >= 0 && $status !== 'completed' && $dueDate) {
+                $cutoff = Carbon::parse($dueDate)->endOfDay()->addDays($graceDays);
+                $autoUnfinished = now()->greaterThan($cutoff);
             }
 
             // Prioritas tugas Classroom selalu "high" (Penting) karena tugas
@@ -381,12 +394,21 @@ class GoogleClassroomService
             ];
 
             if ($existingTodo) {
-                // Only upgrade status, never downgrade:
-                // If Classroom says completed but local isn't, upgrade.
-                // If local is already completed but Classroom says todo, keep completed.
-                if ($status === 'completed' && $existingTodo->status !== 'completed') {
-                    $data['status'] = 'completed';
-                    $data['completed_at'] = now();
+                // Hormati keputusan manual: jika status dikunci mahasiswa,
+                // sinkronisasi tidak menyentuh status sama sekali (reversible).
+                if (!$existingTodo->status_locked) {
+                    // Upgrade ke completed bila Classroom menyatakan sudah dikirim.
+                    if ($status === 'completed' && $existingTodo->status !== 'completed') {
+                        $data['status'] = 'completed';
+                        $data['completed_at'] = now();
+                    } elseif (
+                        $autoUnfinished
+                        && !in_array($existingTodo->status, ['completed', 'unfinished'], true)
+                    ) {
+                        // Auto-tandai tidak terselesaikan (belum dikirim & lewat tenggat).
+                        $data['status'] = 'unfinished';
+                        $data['completed_at'] = now();
+                    }
                 }
 
                 if ($existingTodo->status === 'completed' && !$existingTodo->completed_at) {
@@ -409,7 +431,13 @@ class GoogleClassroomService
                     $skipped++;
                 }
             } else {
-                $data['status'] = $status;
+                // Tugas baru: bila sudah lewat tenggat & belum dikirim, langsung
+                // tandai tidak terselesaikan; selain itu pakai status dari Classroom.
+                $newStatus = ($autoUnfinished && $status !== 'completed') ? 'unfinished' : $status;
+                $data['status'] = $newStatus;
+                if (in_array($newStatus, ['completed', 'unfinished'], true)) {
+                    $data['completed_at'] = now();
+                }
                 $data['user_id'] = $this->user->id;
                 $data['google_task_id'] = $cw['id'];
                 Todo::create($data);
@@ -454,7 +482,7 @@ class GoogleClassroomService
             ->count();
         $pendingClassroom = Todo::where('user_id', $this->user->id)
             ->where('sumber', 'google_classroom')
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->count();
 
         return [

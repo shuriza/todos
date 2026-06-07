@@ -292,7 +292,7 @@ class AiAssistantService
     public function getDailyPlanning(int $userId): array
     {
         $todos = Todo::where('user_id', $userId)
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->orderByRaw("CASE priority WHEN 'high' THEN 1 WHEN 'low' THEN 2 ELSE 3 END")
             ->orderBy('due_date', 'asc')
             ->get();
@@ -381,7 +381,7 @@ PROMPT;
 
         $resolver = function () use ($userId, $limit) {
             $activeTasks = Todo::where('user_id', $userId)
-                ->where('status', '!=', 'completed')
+                ->whereNotIn('status', ['completed', 'unfinished'])
                 ->orderBy('due_date', 'asc')
                 ->limit($limit)
                 ->get(['id', 'title', 'priority', 'kuadran', 'due_date', 'due_time', 'status', 'category']);
