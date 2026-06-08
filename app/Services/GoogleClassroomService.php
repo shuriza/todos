@@ -359,18 +359,13 @@ class GoogleClassroomService
                 }
             }
 
-            // Auto-detect "tidak terselesaikan" (reversible).
-            // Google Classroom API tidak mengekspos status "ditutup", sehingga
-            // kita menyimpulkannya: tugas yang BELUM dikirim (bukan completed)
-            // dan sudah lewat tenggat melebihi masa tenggang dianggap tidak
-            // terselesaikan. Bersifat reversible — keputusan manual mahasiswa
-            // (status_locked) tidak akan ditimpa pada sinkronisasi berikutnya.
-            $graceDays = (int) config('todos.unfinished_grace_days', 1);
-            $autoUnfinished = false;
-            if ($graceDays >= 0 && $status !== 'completed' && $dueDate) {
-                $cutoff = Carbon::parse($dueDate)->endOfDay()->addDays($graceDays);
-                $autoUnfinished = now()->greaterThan($cutoff);
-            }
+            // CATATAN: kita TIDAK auto-menandai "tidak terselesaikan" dari sinkronisasi.
+            // Google Classroom API tidak mengekspos status "ditutup", dan submission
+            // yang gagal terbaca (mis. cakupan izin/scope belum lengkap) akan keliru
+            // dianggap "belum dikirim" — sehingga tugas yang sebenarnya sudah
+            // diserahkan tepat waktu bisa salah ditandai. Penandaan "tidak
+            // terselesaikan" kini sepenuhnya keputusan manual mahasiswa (reversible
+            // via tombol di daftar tugas/arsip).
 
             // Prioritas tugas Classroom selalu "high" (Penting) karena tugas
             // dari dosen bersifat penting secara inheren. Dimensi urgensi
@@ -407,13 +402,6 @@ class GoogleClassroomService
                     if ($status === 'completed' && $existingTodo->status !== 'completed') {
                         $data['status'] = 'completed';
                         $data['completed_at'] = now();
-                    } elseif (
-                        $autoUnfinished
-                        && !in_array($existingTodo->status, ['completed', 'unfinished'], true)
-                    ) {
-                        // Auto-tandai tidak terselesaikan (belum dikirim & lewat tenggat).
-                        $data['status'] = 'unfinished';
-                        $data['completed_at'] = now();
                     }
                 }
 
@@ -437,11 +425,10 @@ class GoogleClassroomService
                     $skipped++;
                 }
             } else {
-                // Tugas baru: bila sudah lewat tenggat & belum dikirim, langsung
-                // tandai tidak terselesaikan; selain itu pakai status dari Classroom.
-                $newStatus = ($autoUnfinished && $status !== 'completed') ? 'unfinished' : $status;
-                $data['status'] = $newStatus;
-                if (in_array($newStatus, ['completed', 'unfinished'], true)) {
+                // Tugas baru: pakai status dari Classroom (completed bila sudah
+                // dikirim, selain itu todo). Tidak ada auto-"tidak terselesaikan".
+                $data['status'] = $status;
+                if ($status === 'completed') {
                     $data['completed_at'] = now();
                 }
                 $data['user_id'] = $this->user->id;

@@ -10,11 +10,16 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * Regresi: auto-detect "tidak terselesaikan" untuk tugas Google Classroom
- * yang belum dikirim dan sudah lewat tenggat (melebihi grace), bersifat
- * reversible (status_locked tidak ditimpa sync).
+ * Regresi: sinkronisasi Google Classroom TIDAK pernah auto-menandai tugas
+ * sebagai "tidak terselesaikan".
+ *
+ * Alasan: Google Classroom API tidak mengekspos status "ditutup", dan
+ * submission yang gagal terbaca (mis. cakupan izin/scope belum lengkap)
+ * akan keliru dianggap "belum dikirim" — sehingga tugas yang sudah
+ * diserahkan tepat waktu bisa salah ditandai. Penandaan "tidak
+ * terselesaikan" kini sepenuhnya keputusan manual mahasiswa (reversible).
  */
-class ClassroomAutoUnfinishedTest extends TestCase
+class ClassroomSyncStatusTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -50,7 +55,6 @@ class ClassroomAutoUnfinishedTest extends TestCase
 
     private function makeUserAndCourse(): array
     {
-        config(['todos.unfinished_grace_days' => 1]);
         $user = User::factory()->create(['google_access_token' => 'google-token']);
         $course = Course::create([
             'user_id' => $user->id,
@@ -61,26 +65,12 @@ class ClassroomAutoUnfinishedTest extends TestCase
         return [$user, $course];
     }
 
-    public function test_tugas_lewat_tenggat_belum_dikirim_otomatis_unfinished(): void
+    public function test_tugas_lewat_tenggat_belum_dikirim_tetap_todo(): void
     {
         [$user] = $this->makeUserAndCourse();
-        // Deadline 5 hari lalu, tidak ada submission -> lewat grace
+        // Lewat tenggat jauh & submission tidak terbaca (kosong). Sync TIDAK
+        // boleh auto-menandai unfinished — ini bug yang dilaporkan penguji.
         $this->fakeClassroom(now()->subDays(5)->toDateString(), []);
-
-        $this->artisan('classroom:sync', ['--user' => $user->id])->assertSuccessful();
-
-        $this->assertDatabaseHas('todos', [
-            'google_task_id' => 'task-1',
-            'status' => 'unfinished',
-        ]);
-    }
-
-    public function test_tugas_dalam_grace_belum_ditandai_unfinished(): void
-    {
-        [$user] = $this->makeUserAndCourse();
-        // Deadline kemarin; grace 1 hari -> cutoff = kemarin akhir hari + 1 hari = besok.
-        // Sekarang belum melewati cutoff, jadi masih 'todo'.
-        $this->fakeClassroom(now()->subDay()->toDateString(), []);
 
         $this->artisan('classroom:sync', ['--user' => $user->id])->assertSuccessful();
 
@@ -88,12 +78,16 @@ class ClassroomAutoUnfinishedTest extends TestCase
             'google_task_id' => 'task-1',
             'status' => 'todo',
         ]);
+        $this->assertDatabaseMissing('todos', [
+            'google_task_id' => 'task-1',
+            'status' => 'unfinished',
+        ]);
     }
 
-    public function test_tugas_sudah_dikirim_tidak_ditandai_unfinished(): void
+    public function test_tugas_sudah_dikirim_jadi_completed(): void
     {
         [$user] = $this->makeUserAndCourse();
-        // Lewat tenggat jauh tapi sudah TURNED_IN -> tetap completed
+        // Lewat tenggat jauh tapi sudah TURNED_IN -> completed.
         $this->fakeClassroom(now()->subDays(5)->toDateString(), [
             ['state' => 'TURNED_IN'],
         ]);
@@ -106,11 +100,28 @@ class ClassroomAutoUnfinishedTest extends TestCase
         ]);
     }
 
+    public function test_tugas_terlambat_ditandai_is_late(): void
+    {
+        [$user] = $this->makeUserAndCourse();
+        // Sudah diserahkan tapi terlambat (late=true) -> completed + is_late.
+        $this->fakeClassroom(now()->subDays(5)->toDateString(), [
+            ['state' => 'TURNED_IN', 'late' => true],
+        ]);
+
+        $this->artisan('classroom:sync', ['--user' => $user->id])->assertSuccessful();
+
+        $this->assertDatabaseHas('todos', [
+            'google_task_id' => 'task-1',
+            'status' => 'completed',
+            'is_late' => true,
+        ]);
+    }
+
     public function test_status_terkunci_tidak_ditimpa_saat_sync(): void
     {
         [$user, $course] = $this->makeUserAndCourse();
 
-        // Mahasiswa sudah membuka kembali tugas (status_locked = true)
+        // Mahasiswa sudah membuka kembali tugas (status_locked = true).
         Todo::create([
             'user_id' => $user->id,
             'course_id' => $course->id,
@@ -124,8 +135,6 @@ class ClassroomAutoUnfinishedTest extends TestCase
             'due_date' => now()->subDays(5)->toDateString(),
         ]);
 
-        // Sync melihat tugas lewat tenggat & belum dikirim (harusnya unfinished),
-        // tapi karena terkunci, status manual dipertahankan.
         $this->fakeClassroom(now()->subDays(5)->toDateString(), []);
 
         $this->artisan('classroom:sync', ['--user' => $user->id])->assertSuccessful();

@@ -72,22 +72,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Auto-detect "Tidak Terselesaikan" (Google Classroom)
-    |--------------------------------------------------------------------------
-    |
-    | Saat sinkronisasi, tugas Google Classroom yang BELUM dikirim dan sudah
-    | lewat tenggat akan otomatis ditandai 'unfinished' setelah masa tenggang
-    | (grace) berikut, dalam hari. Default 1 hari memberi toleransi bila dosen
-    | masih menerima keterlambatan singkat. Fitur ini reversible: perubahan
-    | status manual oleh mahasiswa tidak akan ditimpa (status_locked).
-    | Set ke -1 untuk menonaktifkan auto-detect.
-    |
-    */
-
-    'unfinished_grace_days' => env('TODOS_UNFINISHED_GRACE_DAYS', 1),
-
-    /*
-    |--------------------------------------------------------------------------
     | Pagination
     |--------------------------------------------------------------------------
     */
