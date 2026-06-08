@@ -7,7 +7,7 @@
  * Data: Membaca dari <script id="telegram-data"> JSON block
  */
 
-import { readJsonData, formatDateTime, toast } from '../helpers';
+import { readJsonData, formatDateTime, toast, confirmDialog } from '../helpers';
 
 window.telegramSettings = function () {
     const data = readJsonData('telegram-data') || {};
@@ -159,6 +159,11 @@ window.telegramSettings = function () {
 
         // --- Disconnect ---
         async disconnectTelegram() {
+            if (!await confirmDialog({
+                title: 'Putuskan Telegram',
+                message: 'Koneksi Telegram akan diputus dan semua preferensi notifikasi akan direset.',
+                confirmText: 'Putuskan',
+            })) return;
             try {
                 const res = await fetch(this.routes.disconnect, {
                     method: 'POST',

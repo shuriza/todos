@@ -605,7 +605,7 @@
                     {{-- Disconnect Button --}}
                     @if($user->hasTelegram())
                     <div class="border-t border-gray-100 pt-4">
-                        <button @click="if(confirm('Putuskan koneksi Telegram? Semua preferensi notifikasi akan direset.')) disconnectTelegram()"
+                        <button @click="disconnectTelegram()"
                                 class="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1.5">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                             Putuskan Telegram

@@ -1,5 +1,13 @@
 # AGENTS.md
 
+## Multi Brain (MANDATORY)
+
+- Read `.multibrain/session.md` before starting work.
+- Use `.multibrain/session.md` as the master index only.
+- Open only the `.multibrain/indexes/*.md` bucket files that match the current task.
+- Open `.multibrain/context/*.md` only when the selected bucket points to deeper context that matters.
+- After meaningful work, update the relevant named bucket and refresh the master index if needed.
+
 ## Project Overview
 
 Laravel 12 task management app for Indonesian university students. Google OAuth only (no email/password). Integrates Google Classroom, Telegram Bot, and Google Gemini AI. Production: `https://todosxai.ninja/`. All UI text is **Bahasa Indonesia**.
@@ -86,6 +94,27 @@ TELEGRAM_BOT_TOKEN=       # @BotFather
 TELEGRAM_BOT_USERNAME=    # Without @
 TELEGRAM_WEBHOOK_SECRET=  # php -r "echo bin2hex(random_bytes(32));"
 ```
+
+## MCP Tools
+
+External tools available via Model Context Protocol (configured in `opencode.json`):
+
+- **context7**: Search documentation (Laravel, PHP, Telegram, Google APIs, etc.). Use when you need to look up API references or framework features.
+- **gh_grep**: Search code examples on GitHub. Use when you're unsure how to implement something and need real-world examples.
+
+**Usage**: Add `use context7` or `use gh_grep` to your prompts, or the AI will automatically use them when appropriate.
+
+## LSP Servers
+
+OpenCode LSP aktif dengan auto-detect berdasarkan file extension. Konfigurasi di `opencode.json`.
+
+- **PHP** (`intelephense`) — auto-install saat membuka file `.php`. Dipakai untuk Laravel codebase.
+- **Python** (`pyright`) — install via `npm install -g pyright`. Dipakai untuk script di `.opencode/scripts/`. Config strictness ada di `.opencode/scripts/pyrightconfig.json` (typeCheckingMode `basic`, beberapa rule diturunkan untuk python-docx false positives).
+- **YAML, Bash, JSON** — auto-detect kalau file ada.
+
+Yang **dinonaktifkan**:
+- `typescript`, `deno` — project tidak pakai TypeScript
+- `eslint`, `oxlint` — project tidak pakai linter JavaScript
 
 ## Gotchas
 

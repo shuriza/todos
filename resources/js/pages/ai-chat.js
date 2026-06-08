@@ -7,7 +7,7 @@
  *        task preview cards (confirm/remove sebelum dimasukkan ke daftar tugas)
  */
 
-import { apiHeaders } from '../helpers';
+import { apiHeaders, confirmDialog } from '../helpers';
 
 window.chatBot = function () {
     return {
@@ -140,8 +140,13 @@ window.chatBot = function () {
         },
 
         // --- Clear Chat ---
-        clearChat() {
-            if (this.messages.length > 0 && !confirm('Mulai chat baru? Percakapan saat ini akan hilang.')) return;
+        async clearChat() {
+            if (this.messages.length > 0 && !await confirmDialog({
+                title: 'Mulai Chat Baru',
+                message: 'Percakapan saat ini akan hilang dan tidak bisa dikembalikan.',
+                confirmText: 'Mulai Baru',
+                variant: 'warning',
+            })) return;
             this.messages = [];
             this.sessionId = 'session_' + Date.now();
         },

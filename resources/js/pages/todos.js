@@ -8,7 +8,7 @@
  */
 
 import Sortable from 'sortablejs';
-import { apiHeaders, formatDate, getKuadranLabel, getPriorityLabel, getStatusLabel, toast } from '../helpers';
+import { apiHeaders, confirmDialog, formatDate, getKuadranLabel, getPriorityLabel, getStatusLabel, toast } from '../helpers';
 
 window.todoPageApp = function (config = {}) {
     return {
@@ -170,7 +170,10 @@ window.todoPageApp = function (config = {}) {
         },
 
         async deleteCategory(category) {
-            if (!confirm(`Hapus kategori "${category.name}"? Tugas yang memakai kategori ini akan menjadi tanpa kategori.`)) return;
+            if (!await confirmDialog({
+                title: 'Hapus Kategori',
+                message: `Hapus kategori "${category.name}"? Tugas yang memakai kategori ini akan menjadi tanpa kategori.`,
+            })) return;
 
             try {
                 const res = await fetch(`/categories/${category.id}`, {
@@ -260,7 +263,12 @@ window.todoPageApp = function (config = {}) {
         // Tandai tugas sebagai "Tidak Terselesaikan" (lewat deadline & tidak dikerjakan).
         // Tugas tetap masuk Arsip dengan penanda gagal.
         async markUnfinished(id) {
-            if (!confirm('Tandai tugas ini sebagai TIDAK TERSELESAIKAN? Tugas akan dipindahkan ke Arsip dengan penanda tidak terselesaikan.')) return;
+            if (!await confirmDialog({
+                title: 'Tandai Tidak Terselesaikan',
+                message: 'Tugas akan ditandai TIDAK TERSELESAIKAN dan dipindahkan ke Arsip dengan penanda tidak terselesaikan.',
+                confirmText: 'Tandai',
+                variant: 'warning',
+            })) return;
             try {
                 const res = await fetch(`/todos/${id}`, {
                     method: 'PUT',
@@ -296,7 +304,10 @@ window.todoPageApp = function (config = {}) {
         },
 
         async deleteTodo(id) {
-            if (!confirm('Hapus tugas ini?')) return;
+            if (!await confirmDialog({
+                title: 'Hapus Tugas',
+                message: 'Tugas ini akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.',
+            })) return;
             try {
                 const res = await fetch(`/todos/${id}`, {
                     method: 'DELETE',

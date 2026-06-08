@@ -6,7 +6,7 @@
  * Fitur: Matriks Eisenhower, detail tugas, tambah tugas, pindah kuadran
  */
 
-import { apiHeaders, formatDate, getKuadranLabel, toast } from '../helpers';
+import { apiHeaders, confirmDialog, formatDate, getKuadranLabel, toast } from '../helpers';
 
 window.dashboardApp = function (config = {}) {
     return {
@@ -119,7 +119,10 @@ window.dashboardApp = function (config = {}) {
         },
 
         async deleteTodo(id) {
-            if (!confirm('Hapus tugas ini?')) return;
+            if (!await confirmDialog({
+                title: 'Hapus Tugas',
+                message: 'Tugas ini akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.',
+            })) return;
             try {
                 const res = await fetch(`/todos/${id}`, {
                     method: 'DELETE',

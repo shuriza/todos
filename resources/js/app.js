@@ -46,6 +46,49 @@ window.toastManager = function () {
     };
 };
 
+/**
+ * Confirm Dialog Manager
+ * Pengganti window.confirm() bawaan browser.
+ * Menangkap CustomEvent 'confirm' dari helper confirmDialog().
+ */
+window.confirmManager = function () {
+    return {
+        open: false,
+        title: '',
+        message: '',
+        confirmText: 'Hapus',
+        cancelText: 'Batal',
+        variant: 'danger',
+        _resolve: null,
+
+        show(detail) {
+            this.title = detail.title;
+            this.message = detail.message;
+            this.confirmText = detail.confirmText;
+            this.cancelText = detail.cancelText;
+            this.variant = detail.variant;
+            this._resolve = detail.resolve;
+            this.open = true;
+        },
+
+        confirm() {
+            this._settle(true);
+        },
+
+        cancel() {
+            this._settle(false);
+        },
+
+        _settle(result) {
+            if (this._resolve) {
+                this._resolve(result);
+                this._resolve = null;
+            }
+            this.open = false;
+        },
+    };
+};
+
 window.Alpine = Alpine;
 
 Alpine.start();

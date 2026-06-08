@@ -161,3 +161,30 @@ export function toast(message, type = 'success', duration = 3000) {
         detail: { message, type, duration, id: Date.now() },
     }));
 }
+
+/**
+ * Tampilkan dialog konfirmasi kustom (pengganti window.confirm bawaan browser).
+ * Mengirim CustomEvent 'confirm' yang ditangkap oleh confirmManager di app.blade.php.
+ * Mengembalikan Promise<boolean> — resolve true jika user menekan tombol konfirmasi.
+ *
+ * @param {Object} options
+ * @param {string} options.title       - Judul dialog
+ * @param {string} options.message     - Teks pesan/penjelasan
+ * @param {string} [options.confirmText='Hapus'] - Label tombol konfirmasi
+ * @param {string} [options.cancelText='Batal']  - Label tombol batal
+ * @param {'danger'|'warning'|'info'} [options.variant='danger'] - Gaya warna tombol & ikon
+ * @returns {Promise<boolean>}
+ */
+export function confirmDialog({
+    title = 'Konfirmasi',
+    message = '',
+    confirmText = 'Hapus',
+    cancelText = 'Batal',
+    variant = 'danger',
+} = {}) {
+    return new Promise((resolve) => {
+        window.dispatchEvent(new CustomEvent('confirm', {
+            detail: { title, message, confirmText, cancelText, variant, resolve },
+        }));
+    });
+}
