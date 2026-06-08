@@ -245,12 +245,16 @@
                                             {{ $priorityLabel }}
                                         </span>
 
-                                        {{-- Buka kembali ke daftar aktif (untuk batalkan salah tandai) --}}
-                                        <button type="button" @click="reopenTask({{ $task->id }})"
-                                            class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full hover:bg-indigo-100 transition-colors">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                                            Buka Kembali
-                                        </button>
+                                        {{-- Buka kembali ke daftar aktif: hanya untuk tugas Tidak Terselesaikan
+                                             (membatalkan salah tandai). Tugas Selesai tetap final agar
+                                             tanggal selesai di portofolio tidak hilang. --}}
+                                        @if ($isUnfinished)
+                                            <button type="button" @click="reopenTask({{ $task->id }})"
+                                                class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full hover:bg-indigo-100 transition-colors">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                                Buka Kembali
+                                            </button>
+                                        @endif
 
                                     </div>
                                 </div>

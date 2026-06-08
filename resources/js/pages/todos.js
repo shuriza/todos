@@ -16,6 +16,9 @@ window.todoPageApp = function (config = {}) {
         canReorder: config.canReorder ?? false,
         sortableInstance: null,
 
+        // Set id tugas yang sedang diproses (cegah double-submit aksi status)
+        _busyTasks: new Set(),
+
         // Category state
         categories: (config.categories ?? []).map((category) => ({
             ...category,
@@ -240,6 +243,8 @@ window.todoPageApp = function (config = {}) {
         },
 
         async toggleStatus(id, currentStatus) {
+            if (this._busyTasks.has(id)) return; // cegah double-submit
+            this._busyTasks.add(id);
             // Status final (completed / unfinished) -> buka kembali ke 'todo'.
             // Status aktif -> tandai selesai.
             const isFinal = currentStatus === 'completed' || currentStatus === 'unfinished';
@@ -260,18 +265,22 @@ window.todoPageApp = function (config = {}) {
                 }
             } catch {
                 toast('Gagal mengubah status', 'error');
+            } finally {
+                this._busyTasks.delete(id);
             }
         },
 
         // Tandai tugas sebagai "Tidak Terselesaikan" (lewat deadline & tidak dikerjakan).
         // Tugas tetap masuk Arsip dengan penanda gagal.
         async markUnfinished(id) {
+            if (this._busyTasks.has(id)) return; // cegah double-submit
             if (!await confirmDialog({
                 title: 'Tandai Tidak Terselesaikan',
                 message: 'Tugas akan ditandai TIDAK TERSELESAIKAN dan dipindahkan ke Arsip dengan penanda tidak terselesaikan.',
                 confirmText: 'Tandai',
                 variant: 'warning',
             })) return;
+            this._busyTasks.add(id);
             try {
                 const res = await fetch(`/todos/${id}`, {
                     method: 'PUT',
@@ -293,6 +302,8 @@ window.todoPageApp = function (config = {}) {
                 }
             } catch {
                 toast('Gagal mengubah status', 'error');
+            } finally {
+                this._busyTasks.delete(id);
             }
         },
 
