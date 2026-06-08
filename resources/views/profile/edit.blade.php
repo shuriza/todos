@@ -651,7 +651,7 @@
         ];
     @endphp
     <script id="telegram-data" type="application/json">
-        {!! json_encode($telegramData) !!}
+        @json($telegramData)
     </script>
     {{-- JS loaded from resources/js/pages/telegram.js --}}
     @endpush

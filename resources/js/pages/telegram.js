@@ -135,7 +135,7 @@ window.telegramSettings = function () {
                     headers: { 'Accept': 'application/json' },
                 });
                 const result = await res.json();
-                if (result.success) this.stats = result.stats;
+                if (result.success) this.stats = result.data;
             } catch (e) {
                 // silent fail
             }

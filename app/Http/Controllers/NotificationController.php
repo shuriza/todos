@@ -133,10 +133,7 @@ class NotificationController extends Controller
             'today'    => (int) ($row->today ?? 0),
         ];
 
-        return response()->json([
-            'success' => true,
-            'stats'   => $stats,
-        ]);
+        return ApiResponse::ok($stats);
     }
 
     /**

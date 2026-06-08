@@ -27,7 +27,6 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'nim' => ['nullable', 'string', 'max:20'],
             'prodi' => ['nullable', 'string', 'max:100'],
-            'telegram_chat_id' => ['nullable', 'string', 'max:50'],
         ];
     }
 }
