@@ -240,7 +240,10 @@ window.todoPageApp = function (config = {}) {
         },
 
         async toggleStatus(id, currentStatus) {
-            const newStatus = currentStatus === 'completed' ? 'todo' : 'completed';
+            // Status final (completed / unfinished) -> buka kembali ke 'todo'.
+            // Status aktif -> tandai selesai.
+            const isFinal = currentStatus === 'completed' || currentStatus === 'unfinished';
+            const newStatus = isFinal ? 'todo' : 'completed';
             try {
                 const res = await fetch(`/todos/${id}`, {
                     method: 'PUT',

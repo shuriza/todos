@@ -176,11 +176,11 @@
                 </p>
             </div>
         @else
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" x-data="archivePageApp()">
                 <ul class="divide-y divide-gray-100">
                     @foreach ($tasks as $task)
                         @php $isUnfinished = $task->status === 'unfinished'; @endphp
-                        <li class="p-4 hover:bg-gray-50 transition-colors">
+                        <li id="archive-row-{{ $task->id }}" class="p-4 hover:bg-gray-50 transition-colors">
                             <div class="flex items-start gap-3">
                                 {{-- Status Icon: hijau centang (selesai) / merah silang (tidak terselesaikan) --}}
                                 @if ($isUnfinished)
@@ -244,6 +244,13 @@
                                         <span class="inline-flex items-center px-2 py-0.5 {{ $priorityColor }} text-xs rounded-full">
                                             {{ $priorityLabel }}
                                         </span>
+
+                                        {{-- Buka kembali ke daftar aktif (untuk batalkan salah tandai) --}}
+                                        <button type="button" @click="reopenTask({{ $task->id }})"
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full hover:bg-indigo-100 transition-colors">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                            Buka Kembali
+                                        </button>
 
                                     </div>
                                 </div>
