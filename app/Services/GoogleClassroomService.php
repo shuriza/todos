@@ -343,11 +343,16 @@ class GoogleClassroomService
             // Determine status - check submissions
             // Default to 'todo' (valid DB enum: todo, in_progress, completed, unfinished)
             $status = 'todo';
+            // Field `late` (boolean) dari studentSubmission: true bila tugas
+            // diserahkan SETELAH tenggat. Hanya bermakna untuk tugas yang sudah
+            // dikirim (TURNED_IN/RETURNED) — dipakai untuk badge "Terlambat".
+            $isLate = false;
             $submissions = $this->fetchSubmissions($course->google_course_id, $cw['id']);
             foreach ($submissions as $sub) {
                 $subState = $sub['state'] ?? '';
                 if (in_array($subState, ['TURNED_IN', 'RETURNED'])) {
                     $status = 'completed';
+                    $isLate = (bool) ($sub['late'] ?? false);
                     break;
                 } elseif ($subState === 'CREATED') {
                     $status = 'todo'; // Assigned but not started
@@ -391,6 +396,7 @@ class GoogleClassroomService
                 'google_link' => $cw['alternateLink'] ?? null,
                 'due_date' => $dueDate,
                 'due_time' => $dueTime,
+                'is_late' => $isLate,
             ];
 
             if ($existingTodo) {

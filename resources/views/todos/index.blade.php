@@ -227,6 +227,9 @@
                                 @else
                                     <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">Manual</span>
                                 @endif
+                                @if ($todo->is_late)
+                                    <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md" title="Diserahkan setelah tenggat">Terlambat</span>
+                                @endif
                             </div>
 
                             {{-- Actions --}}

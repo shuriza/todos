@@ -216,6 +216,9 @@
                                             @else
                                                 <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">Selesai</span>
                                             @endif
+                                            @if ($task->is_late)
+                                                <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full" title="Diserahkan setelah tenggat">Terlambat</span>
+                                            @endif
                                         </div>
                                         <span class="flex-shrink-0 text-xs text-gray-500">
                                             {{ $task->completed_at?->translatedFormat('d M Y') }}
