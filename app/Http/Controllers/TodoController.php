@@ -230,7 +230,7 @@ class TodoController extends Controller
      */
     public function statistics()
     {
-        return response()->json($this->computeStats(Auth::id(), true));
+        return ApiResponse::ok($this->computeStats(Auth::id(), true));
     }
 
     /**

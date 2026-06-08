@@ -159,8 +159,19 @@ class Todo extends Model
      */
     public function scopeOverdue($query)
     {
-        return $query->where('due_date', '<', today())
-                    ->whereNotIn('status', ['completed', 'unfinished']);
+        return $query->whereNotIn('status', ['completed', 'unfinished'])
+            ->where(function ($q) {
+                // Lewat tenggat: tanggal sudah lewat, ATAU jatuh hari ini
+                // tapi jam tenggat (due_time) sudah terlewati. due_time null
+                // dianggap akhir hari (belum overdue sampai besok), selaras
+                // dengan accessor isOverdue() yang memakai deadline penuh.
+                $q->whereDate('due_date', '<', today())
+                    ->orWhere(function ($q2) {
+                        $q2->whereDate('due_date', '=', today())
+                            ->whereNotNull('due_time')
+                            ->where('due_time', '<', now()->format('H:i:s'));
+                    });
+            });
     }
 
     /**
@@ -237,8 +248,8 @@ class Todo extends Model
             return 'Terlewat ' . $diff;
         }
         
-        $days = $now->diffInDays($deadline);
-        $hours = $now->diffInHours($deadline) % 24;
+        $days = (int) floor($now->diffInDays($deadline));
+        $hours = (int) floor($now->diffInHours($deadline)) % 24;
         
         if ($days > 0) {
             return $days . ' hari lagi';
@@ -325,14 +336,17 @@ class Todo extends Model
     public static function refreshKuadranForUser(int $userId): int
     {
         $todos = static::where('user_id', $userId)
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['completed', 'unfinished'])
             ->whereNotNull('due_date')
-            ->get(['id', 'priority', 'due_date', 'kuadran']);
+            ->get(['id', 'priority', 'due_date', 'due_time', 'kuadran']);
 
         $updated = 0;
 
         foreach ($todos as $todo) {
-            $newKuadran = static::hitungKuadran($todo->priority, $todo->due_date);
+            // Gunakan deadline penuh (date + time) agar urgensi presisi.
+            // Algoritma hitungKuadran tidak berubah; hanya input yang lebih akurat.
+            $deadline = $todo->deadline?->format('Y-m-d H:i:s');
+            $newKuadran = static::hitungKuadran($todo->priority, $deadline);
 
             if ($newKuadran !== $todo->kuadran) {
                 $todo->updateQuietly(['kuadran' => $newKuadran]);

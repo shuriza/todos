@@ -117,19 +117,21 @@ class TelegramService
         $kuadranLabel = Todo::KUADRAN_LABELS[$todo->kuadran] ?? 'Belum ditentukan';
         $source = $todo->sumber === 'google_classroom' ? 'Google Classroom' : 'dibuat manual';
 
+        $title = htmlspecialchars($todo->title, ENT_QUOTES, 'UTF-8');
         $message = "<b>Pengingat Deadline</b>\n\n"
-            . "<b>{$todo->title}</b>\n"
+            . "<b>{$title}</b>\n"
             . "Tenggat: {$deadline}\n"
             . "Kuadran Q{$todo->kuadran} — {$kuadranLabel}\n"
             . "Sumber: {$source}\n";
 
         if ($todo->description) {
-            $desc = mb_substr(strip_tags($todo->description), 0, 120);
+            $desc = htmlspecialchars(mb_substr(strip_tags($todo->description), 0, 120), ENT_QUOTES, 'UTF-8');
             $message .= "\n<i>{$desc}</i>\n";
         }
 
         if ($todo->course) {
-            $message .= "Mata kuliah: {$todo->course->nama_course}\n";
+            $courseName = htmlspecialchars($todo->course->nama_course, ENT_QUOTES, 'UTF-8');
+            $message .= "Mata kuliah: {$courseName}\n";
         }
 
         $keyboard = [
@@ -170,7 +172,7 @@ class TelegramService
         $lateText = $daysLate < 0 ? abs($daysLate) . ' hari lalu' : 'baru saja';
 
         $message = "<b>Tugas Lewat Deadline</b>\n\n"
-            . "<b>{$todo->title}</b>\n"
+            . "<b>" . htmlspecialchars($todo->title, ENT_QUOTES, 'UTF-8') . "</b>\n"
             . "Tenggat: {$deadline}\n"
             . "Terlambat: {$lateText}\n"
             . "Kuadran Q{$todo->kuadran} — {$kuadranLabel}";
@@ -221,7 +223,7 @@ class TelegramService
 
         $completedToday = $user->todos()
             ->where('status', 'completed')
-            ->whereDate('updated_at', today())
+            ->whereDate('completed_at', today())
             ->count();
 
         $message = "<b>Rangkuman Harian</b>\n"
@@ -230,7 +232,8 @@ class TelegramService
         if ($todayTodos->count() > 0) {
             $message .= "<b>Deadline Hari Ini</b> ({$todayTodos->count()})\n";
             foreach ($todayTodos->take(5) as $i => $todo) {
-                $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$todo->title}\n";
+                $title = htmlspecialchars($todo->title, ENT_QUOTES, 'UTF-8');
+                $message .= "<b>[Q{$todo->kuadran}]</b> " . ($i + 1) . ". {$title}\n";
             }
             if ($todayTodos->count() > 5) {
                 $message .= "<i>+" . ($todayTodos->count() - 5) . " lainnya</i>\n";

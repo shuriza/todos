@@ -36,7 +36,6 @@
         
         .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 600; }
         .badge-high { background-color: #fee2e2; color: #991b1b; }
-        .badge-medium { background-color: #fef3c7; color: #92400e; }
         .badge-low { background-color: #d1fae5; color: #065f46; }
         
         .footer { text-align: center; padding-top: 15px; border-top: 1px solid #e5e7eb; margin-top: 25px; font-size: 9px; color: #9ca3af; }

@@ -374,7 +374,7 @@ class TelegramBotService
         $totalCompleted = $user->todos()->where('status', 'completed')->count();
         $todayDue = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->whereDate('due_date', today())->count();
         $overdue = $user->todos()->whereNotIn('status', ['completed', 'unfinished'])->where('due_date', '<', now()->toDateString())->count();
-        $completedToday = $user->todos()->where('status', 'completed')->whereDate('updated_at', today())->count();
+        $completedToday = $user->todos()->where('status', 'completed')->whereDate('completed_at', today())->count();
         $inProgress = $user->todos()->where('status', 'in_progress')->count();
 
         // Quadrant breakdown
@@ -791,6 +791,7 @@ class TelegramBotService
             'status' => 'completed',
             'completed_at' => now(),
         ]);
+        \App\Support\TodoCache::flush($user->id);
 
         $this->telegram->answerCallbackQuery($callbackId, 'Tugas diselesaikan!');
 
@@ -853,6 +854,7 @@ class TelegramBotService
             'status' => 'todo',
             'completed_at' => null,
         ]);
+        \App\Support\TodoCache::flush($user->id);
 
         $this->telegram->answerCallbackQuery($callbackId, 'Penyelesaian dibatalkan');
 

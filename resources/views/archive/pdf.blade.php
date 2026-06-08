@@ -45,7 +45,6 @@
 
         .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 600; }
         .badge-high { background-color: #fee2e2; color: #991b1b; }
-        .badge-medium { background-color: #fef3c7; color: #92400e; }
         .badge-low { background-color: #f3f4f6; color: #4b5563; }
 
         .empty { text-align: center; padding: 30px; color: #9ca3af; font-style: italic; }

@@ -50,7 +50,7 @@ return [
         ],
         4 => [
             'key'         => 'eliminate',
-            'short_label' => 'Hapuskan',
+            'short_label' => 'Eliminasi',
             'label'       => 'Tidak Mendesak & Tidak Penting',
             'description' => 'Pertimbangkan dihapus',
             'color'       => 'gray',
@@ -105,7 +105,6 @@ return [
 
     'priority_colors' => [
         'high'   => 'red',
-        'medium' => 'yellow',
         'low'    => 'green',
     ],
 

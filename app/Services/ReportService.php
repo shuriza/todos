@@ -65,8 +65,9 @@ class ReportService
                 ->selectRaw("
                     COUNT(*) AS total,
                     SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
-                    SUM(CASE WHEN status <> 'completed' THEN 1 ELSE 0 END) AS pending,
-                    SUM(CASE WHEN status <> 'completed' AND due_date IS NOT NULL AND due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue
+                    SUM(CASE WHEN status = 'unfinished' THEN 1 ELSE 0 END) AS unfinished,
+                    SUM(CASE WHEN status NOT IN ('completed','unfinished') THEN 1 ELSE 0 END) AS pending,
+                    SUM(CASE WHEN status NOT IN ('completed','unfinished') AND due_date IS NOT NULL AND due_date < CURDATE() THEN 1 ELSE 0 END) AS overdue
                 ")
                 ->first();
 
@@ -91,6 +92,7 @@ class ReportService
             return [
                 'total'           => $total,
                 'completed'       => $completed,
+                'unfinished'      => (int) ($row->unfinished ?? 0),
                 'pending'         => (int) ($row->pending ?? 0),
                 'overdue'         => (int) ($row->overdue ?? 0),
                 'completion_rate' => $total > 0 ? round(($completed / $total) * 100, 1) : 0,

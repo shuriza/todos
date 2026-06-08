@@ -214,18 +214,28 @@ class AiAssistantService
                     $categoryId = $existingCategory->id;
                 }
 
+                $priority = $taskData['priority'] ?? 'high';
+                $dueDate  = $taskData['due_date'] ?? null;
+                $dueTime  = $taskData['due_time'] ?? null;
+
+                // Hitung ulang kuadran dari priority + deadline. Jangan percaya
+                // nilai 'kuadran' dari AI agar konsisten dengan algoritma sistem.
+                $deadlineForKuadran = $dueDate
+                    ? trim($dueDate . ' ' . ($dueTime ?? ''))
+                    : null;
+
                 $todo = Todo::create([
                     'user_id'          => $userId,
                     'category_id'      => $categoryId,
                     'title'            => $taskData['title'],
                     'description'      => $taskData['description'] ?? null,
                     'category'         => $categoryStr,
-                    'priority'         => $taskData['priority'] ?? 'high',
-                    'kuadran'          => $taskData['kuadran'] ?? 2,
+                    'priority'         => $priority,
+                    'kuadran'          => Todo::hitungKuadran($priority, $deadlineForKuadran),
                     'status'           => 'todo',
                     'sumber'           => 'manual',
-                    'due_date'         => $taskData['due_date'] ?? null,
-                    'due_time'         => $taskData['due_time'] ?? null,
+                    'due_date'         => $dueDate,
+                    'due_time'         => $dueTime,
                     'reminder_minutes' => $taskData['reminder_minutes'] ?? null,
                 ]);
                 $created[] = $todo->load('course');
@@ -236,6 +246,10 @@ class AiAssistantService
                 ]);
                 $errors[] = "Tugas #" . ($i + 1) . ": " . $e->getMessage();
             }
+        }
+
+        if (count($created) > 0) {
+            \App\Support\TodoCache::flush($userId);
         }
 
         return [

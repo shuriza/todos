@@ -445,6 +445,10 @@ class GoogleClassroomService
             }
         }
 
+        if ($synced > 0 || $updated > 0) {
+            \App\Support\TodoCache::flush($this->user->id);
+        }
+
         return [
             'synced' => $synced,
             'skipped' => $skipped,
