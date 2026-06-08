@@ -41,6 +41,7 @@
                         <option value="all" {{ ($filters['status'] ?? '') === 'all' || empty($filters['status'] ?? '') ? 'selected' : '' }}>Semua Status</option>
                         <option value="todo" {{ ($filters['status'] ?? '') === 'todo' ? 'selected' : '' }}>To Do</option>
                         <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>Selesai</option>
+                        <option value="unfinished" {{ ($filters['status'] ?? '') === 'unfinished' ? 'selected' : '' }}>Tidak Terselesaikan</option>
                     </select>
 
                     <select name="kuadran" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
