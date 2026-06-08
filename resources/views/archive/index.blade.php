@@ -245,14 +245,6 @@
                                             {{ $priorityLabel }}
                                         </span>
 
-                                        @if ($task->sumber === 'google_classroom' && $task->google_link)
-                                            <a href="{{ $task->google_link }}" target="_blank" rel="noopener noreferrer"
-                                               class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-xs rounded-full hover:bg-emerald-100 transition-colors">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                                Buka di Classroom
-                                            </a>
-                                        @endif
-
                                     </div>
                                 </div>
                             </div>
