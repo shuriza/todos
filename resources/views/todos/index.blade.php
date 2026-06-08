@@ -40,7 +40,6 @@
                     <select name="status" onchange="this.form.submit()" class="rounded-lg border-gray-300 text-sm py-2 focus:border-indigo-500 focus:ring-indigo-500">
                         <option value="all" {{ ($filters['status'] ?? '') === 'all' || empty($filters['status'] ?? '') ? 'selected' : '' }}>Semua Status</option>
                         <option value="todo" {{ ($filters['status'] ?? '') === 'todo' ? 'selected' : '' }}>To Do</option>
-                        <option value="in_progress" {{ ($filters['status'] ?? '') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
                         <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>Selesai</option>
                     </select>
 

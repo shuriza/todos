@@ -115,6 +115,10 @@
                         <span class="text-sm text-gray-600">Tugas terlambat</span>
                         <span class="text-sm font-bold text-red-600" x-text="data.overview.overdue">0</span>
                     </div>
+                    <div class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
+                        <span class="text-sm text-gray-600">Tidak terselesaikan</span>
+                        <span class="text-sm font-bold text-gray-700" x-text="data.overview.unfinished ?? 0">0</span>
+                    </div>
                 </div>
             </div>
         </div>

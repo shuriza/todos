@@ -54,7 +54,8 @@ class ArchiveService
         ?string $search = null,
         ?int $courseId = null,
         string $sort = 'latest',
-        int $perPage = 15
+        int $perPage = 15,
+        ?string $status = null
     ): LengthAwarePaginator {
         [$start, $end] = $this->parsePeriod($period);
 
@@ -62,6 +63,11 @@ class ArchiveService
             ->where('user_id', $userId)
             ->whereIn('status', ['completed', 'unfinished'])
             ->whereNotNull('completed_at');
+
+        // Filter status arsip spesifik (completed / unfinished). Default: keduanya.
+        if (in_array($status, ['completed', 'unfinished'], true)) {
+            $query->where('status', $status);
+        }
 
         if ($start !== null) {
             $query->whereBetween('completed_at', [$start, $end]);

@@ -45,14 +45,14 @@
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                 <input type="hidden" name="period" value="{{ $filters['period'] }}">
 
-                <div class="md:col-span-5">
+                <div class="md:col-span-4">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Cari</label>
                     <input type="text" name="search" value="{{ $filters['search'] }}"
                            placeholder="Cari judul atau deskripsi..."
                            class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
-                <div class="md:col-span-4">
+                <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Mata Kuliah</label>
                     <select name="course_id" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">Semua Mata Kuliah</option>
@@ -61,6 +61,15 @@
                                 {{ $course->nama_course }}
                             </option>
                         @endforeach
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                    <select name="status" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Semua</option>
+                        <option value="completed" @selected(($filters['status'] ?? null) === 'completed')>Selesai</option>
+                        <option value="unfinished" @selected(($filters['status'] ?? null) === 'unfinished')>Tidak Terselesaikan</option>
                     </select>
                 </div>
 

@@ -40,11 +40,14 @@ class ArchiveController extends Controller
         $sort     = in_array($request->get('sort'), ['latest', 'oldest'], true)
             ? $request->get('sort')
             : 'latest';
+        $status   = in_array($request->get('status'), ['completed', 'unfinished'], true)
+            ? $request->get('status')
+            : null;
 
         $perPage = (int) config('todos.per_page', 15);
 
         $tasks    = $this->archiveService->getArchivedTasks(
-            $userId, $period, $search, $courseId, $sort, $perPage
+            $userId, $period, $search, $courseId, $sort, $perPage, $status
         );
         $summary  = $this->archiveService->getSummary($userId, $period);
         $courses  = $this->archiveService->getCoursesWithArchived($userId);
@@ -54,6 +57,7 @@ class ArchiveController extends Controller
             'search'    => $search,
             'course_id' => $courseId,
             'sort'      => $sort,
+            'status'    => $status,
         ];
 
         return view('archive.index', compact('tasks', 'summary', 'courses', 'filters'));
