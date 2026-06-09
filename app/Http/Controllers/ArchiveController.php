@@ -74,6 +74,13 @@ class ArchiveController extends Controller
         $period = $this->archiveService->validatePeriod($request->get('period'));
 
         $grouped = $this->archiveService->getArchivedGroupedByCourse($userId, $period);
+
+        // Hentikan ekspor bila arsip kosong agar tidak menghasilkan PDF tanpa data.
+        if ($grouped->isEmpty()) {
+            return redirect()->route('archive.index')
+                ->with('error', 'Arsip masih kosong. Belum ada tugas selesai yang dapat dicetak.');
+        }
+
         $summary = $this->archiveService->getSummary($userId, $period);
 
         $pdf = Pdf::loadView('archive.pdf', [
